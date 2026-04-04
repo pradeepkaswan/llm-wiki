@@ -13,6 +13,7 @@ import {
 import { parsePlanOutput, parseArticleOutput } from './output-parser.js';
 import { findExistingArticle } from './deduplicator.js';
 import { buildNewArticle, buildUpdatedArticle } from './article-builder.js';
+import { extractSchemaCategories, appendCategoriesToSchema } from '../schema/template.js';
 
 const SYSTEM_PROMPT =
   'You are a technical wiki author. Write clear, accurate, well-structured articles with proper citations.';
@@ -59,9 +60,12 @@ export async function synthesize(
   const existingArticles = await store.listArticles();
   const existingSlugs = new Set(existingArticles.map((a) => a.slug));
 
+  // Read schema once for the entire synthesis batch (per D-05)
+  const schema = await store.readSchema() ?? '';
+
   // Step 3: Plan articles
   const planInput = { question, envelopes, existingArticles };
-  const planRaw = await generateText(buildPlanPrompt(planInput), {
+  const planRaw = await generateText(buildPlanPrompt(planInput, schema), {
     system: SYSTEM_PROMPT,
     temperature: PLAN_TEMPERATURE,
     maxOutputTokens: 1024,
@@ -103,8 +107,8 @@ export async function synthesize(
 
     // 4d: Build prompt
     const prompt = existing
-      ? buildUpdatePrompt(existing, relevantSources, question, knownSlugsList)
-      : buildGeneratePrompt(question, plan, relevantSources, knownSlugsList);
+      ? buildUpdatePrompt(existing, relevantSources, question, knownSlugsList, schema)
+      : buildGeneratePrompt(question, plan, relevantSources, knownSlugsList, schema);
 
     // 4e: Generate and parse (with retry per D-03)
     let parsed = parseArticleOutput(
@@ -141,8 +145,20 @@ export async function synthesize(
       : buildNewArticle(parsed, knownSlugsSet);
 
     // 4g: Save article to disk
-    await store.saveArticle(article);
+    await store.saveArticle(article, existing ? 'update' : 'create');
     process.stderr.write(`[SAVED] articles/${article.slug}.md\n`);
+
+    // Schema co-evolution: append new categories to schema taxonomy (per D-06)
+    if (schema) {
+      const knownCats = extractSchemaCategories(schema);
+      const newCats = article.frontmatter.categories.filter(
+        (c) => ![...knownCats].some((k) => k.toLowerCase() === c.toLowerCase())
+      );
+      if (newCats.length > 0) {
+        const updatedSchema = appendCategoriesToSchema(schema, newCats);
+        await store.updateSchema(updatedSchema);
+      }
+    }
 
     // 4h: Track results and grow known slugs for next iteration
     savedArticles.push(article);

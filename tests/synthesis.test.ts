@@ -30,7 +30,7 @@ class MockWikiStore {
     return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   }
 
-  async saveArticle(article: Article): Promise<string> {
+  async saveArticle(article: Article, _operation?: 'create' | 'update'): Promise<string> {
     this.articles.set(article.slug, article);
     return `/tmp/vault/articles/${article.slug}.md`;
   }
@@ -42,6 +42,14 @@ class MockWikiStore {
   async getArticle(slug: string): Promise<Article | null> {
     return this.articles.get(slug) ?? null;
   }
+
+  async readSchema(): Promise<string | null> {
+    return null;
+  }
+
+  async updateSchema(_content: string): Promise<void> {}
+
+  async appendLog(_op: string, _desc: string): Promise<void> {}
 
   // Helper: seed an existing article for dedup tests
   seedArticle(article: Article): void {

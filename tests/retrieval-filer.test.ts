@@ -29,7 +29,7 @@ class MockWikiStore {
     return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   }
 
-  async saveArticle(article: Article): Promise<string> {
+  async saveArticle(article: Article, _operation?: 'create' | 'update'): Promise<string> {
     this.articles.set(article.slug, article);
     return `/tmp/vault/articles/${article.slug}.md`;
   }
@@ -41,6 +41,14 @@ class MockWikiStore {
   async getArticle(slug: string): Promise<Article | null> {
     return this.articles.get(slug) ?? null;
   }
+
+  async readSchema(): Promise<string | null> {
+    return null;
+  }
+
+  async updateSchema(_content: string): Promise<void> {}
+
+  async appendLog(_op: string, _desc: string): Promise<void> {}
 
   seedArticle(article: Article): void {
     this.articles.set(article.slug, article);
@@ -96,40 +104,40 @@ describe('buildFilingPrompt', () => {
   ];
 
   it('includes the original question in the prompt', () => {
-    const prompt = buildFilingPrompt(question, answer, sourceArticles);
+    const prompt = buildFilingPrompt(question, answer, sourceArticles, '');
     expect(prompt).toContain(question);
   });
 
   it('includes the answer text in the prompt', () => {
-    const prompt = buildFilingPrompt(question, answer, sourceArticles);
+    const prompt = buildFilingPrompt(question, answer, sourceArticles, '');
     expect(prompt).toContain(answer);
   });
 
   it('includes source article titles in the prompt', () => {
-    const prompt = buildFilingPrompt(question, answer, sourceArticles);
+    const prompt = buildFilingPrompt(question, answer, sourceArticles, '');
     expect(prompt).toContain('Flash Attention');
     expect(prompt).toContain('Transformers Overview');
   });
 
   it('includes a ## Sources section', () => {
-    const prompt = buildFilingPrompt(question, answer, sourceArticles);
+    const prompt = buildFilingPrompt(question, answer, sourceArticles, '');
     expect(prompt).toContain('## Sources');
   });
 
   it('uses wiki:// prefix in source references', () => {
-    const prompt = buildFilingPrompt(question, answer, sourceArticles);
+    const prompt = buildFilingPrompt(question, answer, sourceArticles, '');
     expect(prompt).toContain('wiki://flash-attention');
     expect(prompt).toContain('wiki://transformers-overview');
   });
 
   it('uses numbered link format in source refs', () => {
-    const prompt = buildFilingPrompt(question, answer, sourceArticles);
+    const prompt = buildFilingPrompt(question, answer, sourceArticles, '');
     expect(prompt).toContain('1. [Flash Attention](wiki://flash-attention)');
     expect(prompt).toContain('2. [Transformers Overview](wiki://transformers-overview)');
   });
 
   it('works with empty source articles list', () => {
-    const prompt = buildFilingPrompt(question, answer, []);
+    const prompt = buildFilingPrompt(question, answer, [], '');
     expect(prompt).toContain(question);
     expect(prompt).toContain(answer);
     expect(prompt).toContain('0 total');
@@ -314,7 +322,7 @@ describe('fileAnswerAsArticle', () => {
   it('calls generateText with the filing prompt', async () => {
     (generateText as ReturnType<typeof vi.fn>).mockResolvedValueOnce(validLlmOutput);
 
-    await fileAnswerAsArticle(question, answer, sourceArticles, store as any);
+    await fileAnswerAsArticle(question, answer, sourceArticles, store as any, '');
 
     expect(generateText).toHaveBeenCalledOnce();
     const [prompt] = (generateText as ReturnType<typeof vi.fn>).mock.calls[0]!;
@@ -325,7 +333,7 @@ describe('fileAnswerAsArticle', () => {
   it('returns article with type: compound', async () => {
     (generateText as ReturnType<typeof vi.fn>).mockResolvedValueOnce(validLlmOutput);
 
-    const result = await fileAnswerAsArticle(question, answer, sourceArticles, store as any);
+    const result = await fileAnswerAsArticle(question, answer, sourceArticles, store as any, '');
 
     expect(result.frontmatter.type).toBe('compound');
   });
@@ -334,7 +342,7 @@ describe('fileAnswerAsArticle', () => {
     (generateText as ReturnType<typeof vi.fn>).mockResolvedValueOnce(validLlmOutput);
     const saveSpy = vi.spyOn(store, 'saveArticle');
 
-    await fileAnswerAsArticle(question, answer, sourceArticles, store as any);
+    await fileAnswerAsArticle(question, answer, sourceArticles, store as any, '');
 
     expect(saveSpy).toHaveBeenCalledOnce();
     const savedArticle = saveSpy.mock.calls[0]![0];
@@ -344,7 +352,7 @@ describe('fileAnswerAsArticle', () => {
   it('returns the saved article', async () => {
     (generateText as ReturnType<typeof vi.fn>).mockResolvedValueOnce(validLlmOutput);
 
-    const result = await fileAnswerAsArticle(question, answer, sourceArticles, store as any);
+    const result = await fileAnswerAsArticle(question, answer, sourceArticles, store as any, '');
 
     expect(result.frontmatter.title).toBe('Flash Attention Explained');
     expect(result.frontmatter.type).toBe('compound');
@@ -353,7 +361,7 @@ describe('fileAnswerAsArticle', () => {
   it('uses wiki:// sources in the returned article', async () => {
     (generateText as ReturnType<typeof vi.fn>).mockResolvedValueOnce(validLlmOutput);
 
-    const result = await fileAnswerAsArticle(question, answer, sourceArticles, store as any);
+    const result = await fileAnswerAsArticle(question, answer, sourceArticles, store as any, '');
 
     expect(result.frontmatter.sources).toContain('wiki://flash-attention');
   });
@@ -364,7 +372,7 @@ describe('fileAnswerAsArticle', () => {
       .mockResolvedValueOnce(badOutput)
       .mockResolvedValueOnce(validLlmOutput);
 
-    const result = await fileAnswerAsArticle(question, answer, sourceArticles, store as any);
+    const result = await fileAnswerAsArticle(question, answer, sourceArticles, store as any, '');
 
     expect(generateText).toHaveBeenCalledTimes(2);
     expect(result.frontmatter.type).toBe('compound');
@@ -377,7 +385,7 @@ describe('fileAnswerAsArticle', () => {
       .mockResolvedValueOnce(badOutput);
 
     await expect(
-      fileAnswerAsArticle(question, answer, sourceArticles, store as any),
+      fileAnswerAsArticle(question, answer, sourceArticles, store as any, ''),
     ).rejects.toThrow('Filing failed: could not parse LLM output after retry');
   });
 
@@ -401,7 +409,7 @@ describe('fileAnswerAsArticle', () => {
 
     (generateText as ReturnType<typeof vi.fn>).mockResolvedValueOnce(validLlmOutput);
 
-    const result = await fileAnswerAsArticle(question, answer, sourceArticles, store as any);
+    const result = await fileAnswerAsArticle(question, answer, sourceArticles, store as any, '');
 
     // Since the title matches exactly (slug lookup), it should update
     expect(result.slug).toBe('flash-attention-explained');
@@ -413,7 +421,7 @@ describe('fileAnswerAsArticle', () => {
   it('passes generateText options with temperature and maxOutputTokens', async () => {
     (generateText as ReturnType<typeof vi.fn>).mockResolvedValueOnce(validLlmOutput);
 
-    await fileAnswerAsArticle(question, answer, sourceArticles, store as any);
+    await fileAnswerAsArticle(question, answer, sourceArticles, store as any, '');
 
     const [, options] = (generateText as ReturnType<typeof vi.fn>).mock.calls[0]!;
     expect(options).toMatchObject({ temperature: 0.3, maxOutputTokens: 4096 });

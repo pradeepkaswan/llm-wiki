@@ -31,6 +31,7 @@ export function buildFilingPrompt(
   question: string,
   answer: string,
   sourceArticles: Article[],
+  schema: string,
 ): string {
   const sourceList = sourceArticles
     .map((a, i) => `[${i + 1}] ${a.frontmatter.title}\nSummary: ${a.frontmatter.summary}`)
@@ -49,6 +50,9 @@ ${answer}
 
 SOURCE WIKI ARTICLES (${sourceArticles.length} total):
 ${sourceList}
+
+WIKI SCHEMA (follow these conventions exactly):
+${schema}
 
 OUTPUT INSTRUCTIONS:
 - Output ONLY the article in the EXACT format below.
@@ -171,9 +175,10 @@ export async function fileAnswerAsArticle(
   answer: string,
   sourceArticles: Article[],
   store: WikiStore,
+  schema: string,
 ): Promise<Article> {
   // Step 1: Build filing prompt
-  const prompt = buildFilingPrompt(question, answer, sourceArticles);
+  const prompt = buildFilingPrompt(question, answer, sourceArticles, schema);
 
   // Step 2: Call LLM
   const raw = await generateText(prompt, {

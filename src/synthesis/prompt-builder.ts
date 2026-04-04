@@ -15,7 +15,7 @@ function truncateSource(markdown: string): string {
  * Build the planning prompt.
  * The LLM reads the question and all sources, then outputs an ARTICLE_COUNT plan.
  */
-export function buildPlanPrompt(input: SynthesisInput): string {
+export function buildPlanPrompt(input: SynthesisInput, schema: string): string {
   const { question, envelopes, existingArticles } = input;
 
   const sourceList = envelopes
@@ -49,6 +49,9 @@ ${sourceList}
 
 ---
 
+WIKI SCHEMA (follow these conventions exactly):
+${schema}
+
 INSTRUCTIONS:
 1. Decide if the question warrants ONE article (focused topic) or MULTIPLE articles (broad topic with distinct subtopics).
 2. For each planned article, assign the most relevant sources by index.
@@ -73,7 +76,8 @@ export function buildGeneratePrompt(
   question: string,
   plan: ArticlePlan,
   sources: RawSourceEnvelope[],
-  knownSlugs: string[]
+  knownSlugs: string[],
+  schema: string
 ): string {
   const sourceContent = sources
     .map(
@@ -101,6 +105,9 @@ SOURCES (${sources.length} total):
 ${sourceContent}
 
 ---
+
+WIKI SCHEMA (follow these conventions exactly):
+${schema}
 
 WIKILINKS — ONLY link to articles in this list (use exact slug):
 ${slugList}
@@ -134,7 +141,8 @@ export function buildUpdatePrompt(
   existingArticle: Article,
   newSources: RawSourceEnvelope[],
   question: string,
-  knownSlugs: string[]
+  knownSlugs: string[],
+  schema: string
 ): string {
   const sourceContent = newSources
     .map(
@@ -162,6 +170,9 @@ NEW SOURCES (${newSources.length} total):
 ${sourceContent}
 
 ---
+
+WIKI SCHEMA (follow these conventions exactly):
+${schema}
 
 WIKILINKS — ONLY link to articles in this list (use exact slug):
 ${slugList}
