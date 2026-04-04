@@ -14,16 +14,18 @@ export interface Config {
   llm_model?: string;
   llm_base_url?: string;
   search_provider: SearchProvider;
+  coverage_threshold: number;  // BM25 score threshold for wiki routing
 }
 
 export const CONFIG_DIR = path.join(os.homedir(), '.llm-wiki');
 export const CONFIG_PATH = path.join(CONFIG_DIR, 'config.json');
 
-const DEFAULTS: Config = {
+export const DEFAULTS: Config = {
   vault_path: path.join(os.homedir(), 'Desktop', "Pradeep's Vault"),
   llm_provider: 'claude',
   llm_base_url: 'http://localhost:11434',
   search_provider: 'exa',
+  coverage_threshold: 5.0,
 };
 
 export function validateConfig(config: Config): void {
@@ -37,6 +39,11 @@ export function validateConfig(config: Config): void {
     throw new Error(
       `Invalid search_provider "${String(config.search_provider)}" in ~/.llm-wiki/config.json. ` +
         `Valid providers: ${VALID_SEARCH_PROVIDERS.join(', ')}.`
+    );
+  }
+  if (typeof config.coverage_threshold !== 'number' || config.coverage_threshold < 0) {
+    throw new Error(
+      'coverage_threshold must be a non-negative number in ~/.llm-wiki/config.json.'
     );
   }
 }
@@ -54,6 +61,9 @@ export async function loadConfig(): Promise<Config> {
       throw err;
     }
     if (err instanceof Error && err.message.includes('Invalid search_provider')) {
+      throw err;
+    }
+    if (err instanceof Error && err.message.includes('coverage_threshold')) {
       throw err;
     }
     // First run: create config directory and write defaults

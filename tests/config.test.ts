@@ -56,6 +56,7 @@ describe('config LLM fields', () => {
         llm_provider: 'claude',
         llm_base_url: 'http://localhost:11434',
         search_provider: 'exa',
+        coverage_threshold: 5.0,
       })
     ).not.toThrow();
   });
@@ -68,6 +69,7 @@ describe('config LLM fields', () => {
         llm_provider: 'openai',
         llm_base_url: 'http://localhost:11434',
         search_provider: 'exa',
+        coverage_threshold: 5.0,
       })
     ).not.toThrow();
   });
@@ -80,6 +82,7 @@ describe('config LLM fields', () => {
         llm_provider: 'ollama',
         llm_base_url: 'http://localhost:11434',
         search_provider: 'exa',
+        coverage_threshold: 5.0,
       })
     ).not.toThrow();
   });
@@ -135,6 +138,7 @@ describe('config search_provider', () => {
         llm_provider: 'claude',
         llm_base_url: 'http://localhost:11434',
         search_provider: 'exa',
+        coverage_threshold: 5.0,
       })
     ).not.toThrow();
   });
