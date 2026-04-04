@@ -1,5 +1,4 @@
 import { Command } from 'commander';
-import * as clack from '@clack/prompts';
 import { WikiStore } from '../store/wiki-store.js';
 import { buildIndex, search } from '../search/search-index.js';
 import { loadConfig } from '../config/config.js';
@@ -9,8 +8,9 @@ export const searchCommand = new Command('search')
   .argument('<query>', 'search query')
   .option('--limit <n>', 'maximum results to return', '10')
   .action(async (query: string, options: { limit: string }) => {
-    // All progress to stderr (per D-02, INTG-02)
-    clack.intro('wiki search');
+    // D-02: human progress to stderr; machine-readable results to stdout (INTG-02)
+    // Note: clack.intro/outro write to stdout by default — using process.stderr.write directly
+    process.stderr.write('wiki search\n');
 
     const config = await loadConfig();
     const store = new WikiStore(config.vault_path);
@@ -31,6 +31,6 @@ export const searchCommand = new Command('search')
     } else {
       // Machine-readable results to stdout (per INTG-02)
       process.stdout.write(JSON.stringify(results, null, 2) + '\n');
-      clack.outro(`Found ${results.length} result(s)`);
+      process.stderr.write(`Found ${results.length} result(s)\n`);
     }
   });
