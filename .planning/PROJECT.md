@@ -20,9 +20,15 @@ Every question you ask makes the wiki smarter — the knowledge compounds automa
 - [x] Q&A against existing wiki content (no re-searching if wiki knows it) — Validated in Phase 5: Retrieval + Feedback Loop
 - [x] Answers from Q&A filed back into wiki as knowledge compounds — Validated in Phase 5: Retrieval + Feedback Loop
 - [x] Claude Code skill for using the wiki from within Claude Code sessions — Validated in Phase 6: OpenClaw Skill
+- [x] Wiki schema file (Karpathy's third layer) teaching LLM wiki conventions — Validated in Phase 7: Schema + Activity Log
+- [x] Append-only activity log tracking all wiki operations — Validated in Phase 7: Schema + Activity Log
 
 ### Active
 
+- [ ] Multi-page ingest (one source touches 10-15 pages)
+- [ ] Broad filing (comparisons, analyses, connections → wiki)
+- [ ] Bidirectional backlinks for Obsidian graph view
+- [ ] Lint + heal workflow (contradictions, orphans, stale claims)
 - [ ] Wiki articles stored in existing Obsidian vault (Pradeep's Vault)
 - [ ] Auto-maintained index of all wiki articles
 
@@ -80,4 +86,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-05 after Phase 6 completion — all v1 milestone phases complete*
+*Last updated: 2026-04-05 after Phase 7 completion — Karpathy v1.1 phases in progress*
