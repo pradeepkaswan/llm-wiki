@@ -80,8 +80,13 @@ Plans:
   3. Asking the same question a second time updates the existing article rather than creating a duplicate
   4. A broad question (e.g. "Explain transformer architecture") generates 2+ linked articles covering distinct sub-concepts
   5. Every article's YAML frontmatter includes `sources`, `sourced_at`, and `type: web` — readable by `js-yaml` without error
-**Plans**: TBD
+**Plans**: 3 plans
 **UI hint**: no
+
+Plans:
+- [ ] 04-01-PLAN.md — Extend LLM adapter (GenerateOptions), synthesis types, prompt-builder, output-parser
+- [ ] 04-02-PLAN.md — Deduplicator (slug + BM25 + LLM tiebreak), article-builder, wikilink sanitizer
+- [ ] 04-03-PLAN.md — Synthesizer orchestrator and ask command CLI wiring
 
 ### Phase 5: Retrieval + Feedback Loop
 **Goal**: The wiki answers its own questions — the system checks local knowledge before fetching the web, and Q&A answers compound back into the wiki as durable artifacts
@@ -116,6 +121,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 1. Foundation | 3/3 | Complete    | 2026-04-04 |
 | 2. LLM Adapter | 1/1 | Complete   | 2026-04-04 |
 | 3. Ingestion | 3/3 | Complete   | 2026-04-04 |
-| 4. Synthesis | 0/TBD | Not started | - |
+| 4. Synthesis | 0/3 | Not started | - |
 | 5. Retrieval + Feedback Loop | 0/TBD | Not started | - |
 | 6. OpenClaw Skill | 0/TBD | Not started | - |
