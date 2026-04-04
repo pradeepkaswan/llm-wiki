@@ -136,8 +136,8 @@ Plans:
 **UI hint**: no
 
 Plans:
-- [ ] 07-01-PLAN.md — WikiStore extension (readSchema, updateSchema, appendLog) and schema template module
-- [ ] 07-02-PLAN.md — Prompt-builder schema injection, synthesizer wiring, schema bootstrap, co-evolution
+- [x] 07-01-PLAN.md — WikiStore extension (readSchema, updateSchema, appendLog) and schema template module
+- [x] 07-02-PLAN.md — Prompt-builder schema injection, synthesizer wiring, schema bootstrap, co-evolution
 
 ### Phase 8: Multi-Page Ingest + Broad Filing + Graph
 **Goal**: A single source ripples knowledge across the entire wiki — not just one article. Any valuable LLM output (comparisons, analyses, connections) can be filed back. Backlinks are bidirectional for Obsidian graph view.
