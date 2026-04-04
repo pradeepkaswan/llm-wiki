@@ -39,7 +39,7 @@ export class WikiStore {
     }
   }
 
-  async saveArticle(article: Article): Promise<string> {
+  async saveArticle(article: Article, operation: 'create' | 'update' = 'create'): Promise<string> {
     await this.ensureDirectories();
 
     // 1. Validate before touching disk (per D-08 — hard error, not silent)
@@ -57,7 +57,10 @@ export class WikiStore {
     const filePath = path.join(this.articlesDir, `${article.slug}.md`);
     await writeFileAtomic(filePath, content, 'utf8');
 
-    // 5. Rebuild index after every save (per D-09)
+    // 5. Log the operation before rebuilding index (per plan requirement)
+    await this.appendLog(operation, `${operation === 'update' ? 'Updated' : 'Created'} article ${article.slug}`);
+
+    // 6. Rebuild index after every save (per D-09)
     await this.rebuildIndex();
 
     return filePath;
@@ -90,6 +93,29 @@ export class WikiStore {
       })
     );
     return articles.filter((a): a is Article => a !== null);
+  }
+
+  async readSchema(): Promise<string | null> {
+    const schemaPath = path.join(this.vaultPath, 'schema.md');
+    try {
+      return await fs.readFile(schemaPath, 'utf8');
+    } catch {
+      return null;
+    }
+  }
+
+  async updateSchema(content: string): Promise<void> {
+    const schemaPath = path.join(this.vaultPath, 'schema.md');
+    await writeFileAtomic(schemaPath, content, 'utf8');
+    await this.appendLog('schema', 'Updated schema taxonomy');
+  }
+
+  async appendLog(operation: string, description: string): Promise<void> {
+    const now = new Date();
+    const timestamp = now.toISOString().slice(0, 16).replace('T', ' ');
+    const entry = `## [${timestamp}] ${operation} | ${description}\n`;
+    const logPath = path.join(this.vaultPath, 'log.md');
+    await fs.appendFile(logPath, entry, 'utf8');
   }
 
   async rebuildIndex(): Promise<void> {
@@ -127,5 +153,6 @@ export class WikiStore {
     const indexContent = matter.stringify(body, indexFrontmatter);
     const indexPath = path.join(this.articlesDir, 'index.md');
     await writeFileAtomic(indexPath, indexContent, 'utf8');
+    await this.appendLog('index', 'Rebuilt wiki index');
   }
 }
