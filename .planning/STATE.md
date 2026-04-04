@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
-stopped_at: Completed 02-llm-adapter/02-01-PLAN.md
-last_updated: "2026-04-04T10:45:03.502Z"
+status: executing
+stopped_at: Completed 03-ingestion-03-01-PLAN.md
+last_updated: "2026-04-04T14:35:16.232Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 6
   completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 7
+  completed_plans: 5
   percent: 0
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-03)
 
 **Core value:** Every question you ask makes the wiki smarter — the knowledge compounds automatically.
-**Current focus:** Phase 02 — llm-adapter
+**Current focus:** Phase 03 — ingestion
 
 ## Current Position
 
-Phase: 02 (llm-adapter) — EXECUTING
-Plan: 1 of 1
-Status: Phase complete — ready for verification
+Phase: 03 (ingestion) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
 Last activity: 2026-04-04
 
 Progress: [░░░░░░░░░░] 0%
@@ -56,6 +56,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01-foundation P02 | 108 | 1 tasks | 2 files |
 | Phase 01-foundation P03 | 1443 | 2 tasks | 8 files |
 | Phase 02-llm-adapter P01 | 176 | 2 tasks | 6 files |
+| Phase 03-ingestion P01 | 7 | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,9 @@ Recent decisions affecting current work:
 - [Phase 02-llm-adapter]: Re-throw validation errors in loadConfig() catch block to prevent silent swallow as first-run case (preserves fail-fast D-03 contract)
 - [Phase 02-llm-adapter]: Export createProvider() from adapter.ts for unit testability without loadConfig() filesystem access
 - [Phase 02-llm-adapter]: VALID_PROVIDERS as const tuple gives compile-time exhaustiveness checking on LlmProvider union type
+- [Phase 03-ingestion]: ExaSearchProvider uses SEARCH_RESULT_COUNT=5 as code constant per D-10 — not user-configurable
+- [Phase 03-ingestion]: Exa called with type: neural only, no contents option — URL discovery only per D-13
+- [Phase 03-ingestion]: search_provider added as required Config field with 'exa' default — mirrors llm_provider pattern
 
 ### Pending Todos
 
@@ -89,6 +93,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T10:45:03.498Z
-Stopped at: Completed 02-llm-adapter/02-01-PLAN.md
+Last session: 2026-04-04T14:35:16.228Z
+Stopped at: Completed 03-ingestion-03-01-PLAN.md
 Resume file: None

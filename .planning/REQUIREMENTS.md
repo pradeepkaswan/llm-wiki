@@ -17,10 +17,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Ingestion
 
-- [ ] **INGEST-01**: System searches the web via Exa API (neural search) to find sources for a question
+- [x] **INGEST-01**: System searches the web via Exa API (neural search) to find sources for a question
 - [ ] **INGEST-02**: System fetches web pages and extracts article body as clean markdown
 - [ ] **INGEST-03**: Raw unprocessed sources are preserved in `~/.llm-wiki/raw/` with metadata
-- [ ] **INGEST-04**: Search provider is configurable (Exa default, extensible to Brave/Tavily)
+- [x] **INGEST-04**: Search provider is configurable (Exa default, extensible to Brave/Tavily)
 - [ ] **INGEST-05**: User can ingest a specific URL directly (`wiki ingest <url>`) — supports web pages, PDFs, arxiv papers
 
 ### Synthesis
@@ -93,10 +93,10 @@ Deferred to future release. Tracked but not in current roadmap.
 | FOUND-03 | Phase 1 | Complete |
 | FOUND-04 | Phase 2 | Complete |
 | FOUND-05 | Phase 2 | Complete |
-| INGEST-01 | Phase 3 | Pending |
+| INGEST-01 | Phase 3 | Complete |
 | INGEST-02 | Phase 3 | Pending |
 | INGEST-03 | Phase 3 | Pending |
-| INGEST-04 | Phase 3 | Pending |
+| INGEST-04 | Phase 3 | Complete |
 | INGEST-05 | Phase 3 | Pending |
 | SYNTH-01 | Phase 4 | Pending |
 | SYNTH-02 | Phase 4 | Pending |

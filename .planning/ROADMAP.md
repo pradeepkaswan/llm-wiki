@@ -62,8 +62,13 @@ Plans:
   3. A paywalled or near-empty page is detected and excluded — synthesis never receives garbage content
   4. Running `wiki ingest <url>` stores that specific URL as a raw source envelope, ready for synthesis
   5. Search provider can be switched from Exa to an alternative in config without touching source code
-**Plans**: TBD
+**Plans**: 3 plans
 **UI hint**: no
+
+Plans:
+- [x] 03-01-PLAN.md — Install deps, ingestion types, config extension (search_provider), SearchProvider interface + Exa implementation
+- [ ] 03-02-PLAN.md — Content extraction pipeline (HTML/PDF), quality filter, raw source envelope storage
+- [ ] 03-03-PLAN.md — Wire ask and ingest commands to full ingestion pipeline
 
 ### Phase 4: Synthesis
 **Goal**: Raw sources become structured wiki articles in the Obsidian vault — with citations, backlinks to real articles, deduplication, and provenance frontmatter baked in before the feedback loop exists
@@ -110,7 +115,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete    | 2026-04-04 |
 | 2. LLM Adapter | 1/1 | Complete   | 2026-04-04 |
-| 3. Ingestion | 0/TBD | Not started | - |
+| 3. Ingestion | 1/3 | In Progress|  |
 | 4. Synthesis | 0/TBD | Not started | - |
 | 5. Retrieval + Feedback Loop | 0/TBD | Not started | - |
 | 6. OpenClaw Skill | 0/TBD | Not started | - |
