@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import * as path from 'path';
 import * as os from 'os';
+// Note: vitest isolates modules per test file; dynamic imports allow per-test module loading
 
 describe('config', () => {
   it('exports CONFIG_DIR pointing to ~/.llm-wiki', async () => {
@@ -54,6 +55,7 @@ describe('config LLM fields', () => {
         vault_path: '/some/path',
         llm_provider: 'claude',
         llm_base_url: 'http://localhost:11434',
+        search_provider: 'exa',
       })
     ).not.toThrow();
   });
@@ -65,6 +67,7 @@ describe('config LLM fields', () => {
         vault_path: '/some/path',
         llm_provider: 'openai',
         llm_base_url: 'http://localhost:11434',
+        search_provider: 'exa',
       })
     ).not.toThrow();
   });
@@ -76,6 +79,7 @@ describe('config LLM fields', () => {
         vault_path: '/some/path',
         llm_provider: 'ollama',
         llm_base_url: 'http://localhost:11434',
+        search_provider: 'exa',
       })
     ).not.toThrow();
   });
@@ -87,6 +91,7 @@ describe('config LLM fields', () => {
         vault_path: '/some/path',
         llm_provider: 'gpt4' as 'claude',
         llm_base_url: 'http://localhost:11434',
+        search_provider: 'exa',
       })
     ).toThrow(/Invalid llm_provider/);
   });
@@ -99,12 +104,66 @@ describe('config LLM fields', () => {
         vault_path: '/some/path',
         llm_provider: 'gpt4' as 'claude',
         llm_base_url: 'http://localhost:11434',
-      });
+        search_provider: 'exa',
+      } as Parameters<typeof validateConfig>[0]);
     } catch (err) {
       errorMessage = (err as Error).message;
     }
     expect(errorMessage).toMatch(/claude/);
     expect(errorMessage).toMatch(/openai/);
     expect(errorMessage).toMatch(/ollama/);
+  });
+});
+
+describe('config search_provider', () => {
+  it('loadConfig returns search_provider defaulting to exa', async () => {
+    const { loadConfig } = await import('../src/config/config.js');
+    const config = await loadConfig();
+    expect(config.search_provider).toBe('exa');
+  });
+
+  it('VALID_SEARCH_PROVIDERS contains exactly exa', async () => {
+    const { VALID_SEARCH_PROVIDERS } = await import('../src/config/config.js');
+    expect(Array.from(VALID_SEARCH_PROVIDERS)).toEqual(['exa']);
+  });
+
+  it('validateConfig does not throw for search_provider exa', async () => {
+    const { validateConfig } = await import('../src/config/config.js');
+    expect(() =>
+      validateConfig({
+        vault_path: '/some/path',
+        llm_provider: 'claude',
+        llm_base_url: 'http://localhost:11434',
+        search_provider: 'exa',
+      })
+    ).not.toThrow();
+  });
+
+  it('validateConfig throws Invalid search_provider for unknown value google', async () => {
+    const { validateConfig } = await import('../src/config/config.js');
+    expect(() =>
+      validateConfig({
+        vault_path: '/some/path',
+        llm_provider: 'claude',
+        llm_base_url: 'http://localhost:11434',
+        search_provider: 'google' as 'exa',
+      })
+    ).toThrow(/Invalid search_provider/);
+  });
+
+  it('validateConfig error message contains exa for invalid search_provider', async () => {
+    const { validateConfig } = await import('../src/config/config.js');
+    let errorMessage = '';
+    try {
+      validateConfig({
+        vault_path: '/some/path',
+        llm_provider: 'claude',
+        llm_base_url: 'http://localhost:11434',
+        search_provider: 'google' as 'exa',
+      });
+    } catch (err) {
+      errorMessage = (err as Error).message;
+    }
+    expect(errorMessage).toMatch(/exa/);
   });
 });

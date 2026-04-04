@@ -5,11 +5,15 @@ import * as os from 'os';
 export const VALID_PROVIDERS = ['claude', 'openai', 'ollama'] as const;
 export type LlmProvider = typeof VALID_PROVIDERS[number];
 
+export const VALID_SEARCH_PROVIDERS = ['exa'] as const;
+export type SearchProvider = typeof VALID_SEARCH_PROVIDERS[number];
+
 export interface Config {
   vault_path: string;
   llm_provider: LlmProvider;
   llm_model?: string;
   llm_base_url?: string;
+  search_provider: SearchProvider;
 }
 
 export const CONFIG_DIR = path.join(os.homedir(), '.llm-wiki');
@@ -19,6 +23,7 @@ const DEFAULTS: Config = {
   vault_path: path.join(os.homedir(), 'Desktop', "Pradeep's Vault"),
   llm_provider: 'claude',
   llm_base_url: 'http://localhost:11434',
+  search_provider: 'exa',
 };
 
 export function validateConfig(config: Config): void {
@@ -26,6 +31,12 @@ export function validateConfig(config: Config): void {
     throw new Error(
       `Invalid llm_provider "${String(config.llm_provider)}" in ~/.llm-wiki/config.json. ` +
         `Valid providers: ${VALID_PROVIDERS.join(', ')}.`
+    );
+  }
+  if (!VALID_SEARCH_PROVIDERS.includes(config.search_provider as SearchProvider)) {
+    throw new Error(
+      `Invalid search_provider "${String(config.search_provider)}" in ~/.llm-wiki/config.json. ` +
+        `Valid providers: ${VALID_SEARCH_PROVIDERS.join(', ')}.`
     );
   }
 }
@@ -40,6 +51,9 @@ export async function loadConfig(): Promise<Config> {
   } catch (err) {
     // Re-throw validation errors — don't swallow them as first-run
     if (err instanceof Error && err.message.includes('Invalid llm_provider')) {
+      throw err;
+    }
+    if (err instanceof Error && err.message.includes('Invalid search_provider')) {
       throw err;
     }
     // First run: create config directory and write defaults
