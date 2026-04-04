@@ -234,4 +234,88 @@ describe('LLM adapter', () => {
       expect(result).toBe('hello from ollama');
     });
   });
+
+  describe('generateText with GenerateOptions', () => {
+    it('still works with no options (backward compat)', async () => {
+      const { loadConfig } = await import('../src/config/config.js');
+      vi.mocked(loadConfig).mockResolvedValue({
+        vault_path: '/vault',
+        llm_provider: 'claude',
+        llm_base_url: 'http://localhost:11434',
+      });
+
+      const { generateText: sdkGenerateText } = await import('ai');
+      vi.mocked(sdkGenerateText).mockResolvedValue({ text: 'hello' } as never);
+
+      const { generateText } = await import('../src/llm/adapter.js');
+      const result = await generateText('hello');
+
+      expect(result).toBe('hello');
+    });
+
+    it('passes system to SDK when provided', async () => {
+      const { loadConfig } = await import('../src/config/config.js');
+      vi.mocked(loadConfig).mockResolvedValue({
+        vault_path: '/vault',
+        llm_provider: 'claude',
+        llm_base_url: 'http://localhost:11434',
+      });
+
+      const { generateText: sdkGenerateText } = await import('ai');
+      vi.mocked(sdkGenerateText).mockResolvedValue({ text: 'ok' } as never);
+
+      const { generateText } = await import('../src/llm/adapter.js');
+      await generateText('hello', { system: 'You are a wiki author' });
+
+      expect(vi.mocked(sdkGenerateText)).toHaveBeenCalledWith(
+        expect.objectContaining({
+          system: 'You are a wiki author',
+        })
+      );
+    });
+
+    it('passes system and temperature to SDK when provided', async () => {
+      const { loadConfig } = await import('../src/config/config.js');
+      vi.mocked(loadConfig).mockResolvedValue({
+        vault_path: '/vault',
+        llm_provider: 'claude',
+        llm_base_url: 'http://localhost:11434',
+      });
+
+      const { generateText: sdkGenerateText } = await import('ai');
+      vi.mocked(sdkGenerateText).mockResolvedValue({ text: 'ok' } as never);
+
+      const { generateText } = await import('../src/llm/adapter.js');
+      await generateText('hello', { system: 'You are a wiki author', temperature: 0.3 });
+
+      expect(vi.mocked(sdkGenerateText)).toHaveBeenCalledWith(
+        expect.objectContaining({
+          system: 'You are a wiki author',
+          temperature: 0.3,
+        })
+      );
+    });
+
+    it('passes temperature and maxOutputTokens to SDK when provided', async () => {
+      const { loadConfig } = await import('../src/config/config.js');
+      vi.mocked(loadConfig).mockResolvedValue({
+        vault_path: '/vault',
+        llm_provider: 'claude',
+        llm_base_url: 'http://localhost:11434',
+      });
+
+      const { generateText: sdkGenerateText } = await import('ai');
+      vi.mocked(sdkGenerateText).mockResolvedValue({ text: 'ok' } as never);
+
+      const { generateText } = await import('../src/llm/adapter.js');
+      await generateText('hello', { temperature: 0.3, maxOutputTokens: 4096 });
+
+      expect(vi.mocked(sdkGenerateText)).toHaveBeenCalledWith(
+        expect.objectContaining({
+          temperature: 0.3,
+          maxOutputTokens: 4096,
+        })
+      );
+    });
+  });
 });

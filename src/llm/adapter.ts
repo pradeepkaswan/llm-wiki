@@ -37,9 +37,24 @@ export function createProvider(config: Config): LanguageModel {
   }
 }
 
-export async function generateText(prompt: string): Promise<string> {
+export interface GenerateOptions {
+  system?: string;
+  temperature?: number;
+  maxOutputTokens?: number;
+}
+
+export async function generateText(
+  prompt: string,
+  options: GenerateOptions = {}
+): Promise<string> {
   const config = await loadConfig();
   const model = createProvider(config);
-  const { text } = await sdkGenerateText({ model, prompt });
+  const { text } = await sdkGenerateText({
+    model,
+    prompt,
+    system: options.system,
+    temperature: options.temperature,
+    maxOutputTokens: options.maxOutputTokens,
+  });
   return text;
 }
