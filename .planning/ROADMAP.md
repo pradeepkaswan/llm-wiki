@@ -97,8 +97,13 @@ Plans:
   2. Asking the same question twice — first run fetches web and writes an article, second run answers from the wiki
   3. After a Q&A answer is generated, the user is prompted to approve filing it back into the wiki; answering yes creates or updates an article marked `type: compound`
   4. The orchestrator correctly routes between "answer from wiki" and "search web" based on coverage confidence, with the threshold configurable in `~/.llm-wiki/config.json`
-**Plans**: TBD
+**Plans**: 3 plans
 **UI hint**: no
+
+Plans:
+- [ ] 05-01-PLAN.md — Config extension (coverage_threshold), coverage assessment engine, wiki answer generator
+- [ ] 05-02-PLAN.md — Compound article filing pipeline (Q&A-to-article conversion, dedup, wiki:// sources)
+- [ ] 05-03-PLAN.md — CLI wiring: ask command wiki-first flow, --web flag, readline confirmation, tests
 
 ### Phase 6: OpenClaw Skill
 **Goal**: The wiki is accessible from any OpenClaw-connected interface (Telegram, Claude Code) with no new logic — the CLI is the implementation, the skill is a thin wrapper
@@ -114,7 +119,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -122,5 +127,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 2. LLM Adapter | 1/1 | Complete   | 2026-04-04 |
 | 3. Ingestion | 3/3 | Complete   | 2026-04-04 |
 | 4. Synthesis | 3/3 | Complete   | 2026-04-04 |
-| 5. Retrieval + Feedback Loop | 0/TBD | Not started | - |
+| 5. Retrieval + Feedback Loop | 0/3 | Planning complete | - |
 | 6. OpenClaw Skill | 0/TBD | Not started | - |
