@@ -7,10 +7,17 @@
   },
   "scripts": {
     "build": "tsc",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run build",
     "dev": "tsx src/index.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
+  "files": [
+    "dist/",
+    "skills/",
+    "package.json"
+  ],
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.66",
     "@ai-sdk/openai": "^3.0.50",
