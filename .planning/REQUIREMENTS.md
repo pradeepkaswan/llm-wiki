@@ -12,8 +12,8 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **FOUND-01**: User can ask a natural language question via CLI (`wiki ask "How does X work?"`)
 - [x] **FOUND-02**: Articles are written as Obsidian-compatible markdown with valid YAML frontmatter
 - [x] **FOUND-03**: Auto-maintained index file updates whenever articles are added or modified
-- [ ] **FOUND-04**: LLM provider is configurable via config file (Claude, OpenAI, Ollama)
-- [ ] **FOUND-05**: Project config stored at `~/.llm-wiki/config.json` with sensible defaults
+- [x] **FOUND-04**: LLM provider is configurable via config file (Claude, OpenAI, Ollama)
+- [x] **FOUND-05**: Project config stored at `~/.llm-wiki/config.json` with sensible defaults
 
 ### Ingestion
 
@@ -91,8 +91,8 @@ Deferred to future release. Tracked but not in current roadmap.
 | FOUND-01 | Phase 1 | Complete |
 | FOUND-02 | Phase 1 | Complete |
 | FOUND-03 | Phase 1 | Complete |
-| FOUND-04 | Phase 2 | Pending |
-| FOUND-05 | Phase 2 | Pending |
+| FOUND-04 | Phase 2 | Complete |
+| FOUND-05 | Phase 2 | Complete |
 | INGEST-01 | Phase 3 | Pending |
 | INGEST-02 | Phase 3 | Pending |
 | INGEST-03 | Phase 3 | Pending |

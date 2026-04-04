@@ -13,7 +13,7 @@ Six phases build the compounding knowledge engine layer by layer. Foundation fir
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Wiki Store, CLI skeleton, and non-TTY-safe stdout/stderr separation (completed 2026-04-04)
-- [ ] **Phase 2: LLM Adapter** - Multi-provider LLM abstraction and config system
+- [x] **Phase 2: LLM Adapter** - Multi-provider LLM abstraction and config system (completed 2026-04-04)
 - [ ] **Phase 3: Ingestion** - Web search, HTML extraction, raw source storage, URL ingestion
 - [ ] **Phase 4: Synthesis** - LLM article generation, citations, backlinks, dedup, provenance
 - [ ] **Phase 5: Retrieval + Feedback Loop** - BM25 search, orchestrator routing, Q&A filing
@@ -50,7 +50,7 @@ Plans:
 **UI hint**: no
 
 Plans:
-- [ ] 02-01-PLAN.md — Config extension (LLM fields + validation) and multi-provider adapter (generateText + provider factory)
+- [x] 02-01-PLAN.md — Config extension (LLM fields + validation) and multi-provider adapter (generateText + provider factory)
 
 ### Phase 3: Ingestion
 **Goal**: The system can find web sources for any question and store them as raw JSON envelopes on disk — no LLM involved, fully auditable
@@ -109,7 +109,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete    | 2026-04-04 |
-| 2. LLM Adapter | 0/1 | Not started | - |
+| 2. LLM Adapter | 1/1 | Complete   | 2026-04-04 |
 | 3. Ingestion | 0/TBD | Not started | - |
 | 4. Synthesis | 0/TBD | Not started | - |
 | 5. Retrieval + Feedback Loop | 0/TBD | Not started | - |

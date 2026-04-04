@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 01-foundation-03-PLAN.md
-last_updated: "2026-04-04T09:21:30.087Z"
+stopped_at: Completed 02-llm-adapter/02-01-PLAN.md
+last_updated: "2026-04-04T10:45:03.502Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 6
-  completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  completed_phases: 2
+  total_plans: 4
+  completed_plans: 4
   percent: 0
 ---
 
@@ -21,12 +21,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-03)
 
 **Core value:** Every question you ask makes the wiki smarter — the knowledge compounds automatically.
-**Current focus:** Phase 01 — foundation
+**Current focus:** Phase 02 — llm-adapter
 
 ## Current Position
 
-Phase: 2
-Plan: Not started
+Phase: 02 (llm-adapter) — EXECUTING
+Plan: 1 of 1
 Status: Phase complete — ready for verification
 Last activity: 2026-04-04
 
@@ -55,6 +55,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01-foundation P01 | 4m | 2 tasks | 9 files |
 | Phase 01-foundation P02 | 108 | 1 tasks | 2 files |
 | Phase 01-foundation P03 | 1443 | 2 tasks | 8 files |
+| Phase 02-llm-adapter P01 | 176 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -72,6 +73,9 @@ Recent decisions affecting current work:
 - [Phase 01-foundation]: rebuildIndex() falls back to Uncategorized for articles with empty categories — prevents silent index omission
 - [Phase 01-foundation]: clack.intro/outro write to stdout — replaced with process.stderr.write() to enforce INTG-02 stdout/stderr contract
 - [Phase 01-foundation]: configureOutput({ writeOut: process.stderr.write }) in src/index.ts ensures Commander help never pollutes stdout — required for Phase 6 subprocess piping
+- [Phase 02-llm-adapter]: Re-throw validation errors in loadConfig() catch block to prevent silent swallow as first-run case (preserves fail-fast D-03 contract)
+- [Phase 02-llm-adapter]: Export createProvider() from adapter.ts for unit testability without loadConfig() filesystem access
+- [Phase 02-llm-adapter]: VALID_PROVIDERS as const tuple gives compile-time exhaustiveness checking on LlmProvider union type
 
 ### Pending Todos
 
@@ -85,6 +89,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T09:17:13.197Z
-Stopped at: Completed 01-foundation-03-PLAN.md
+Last session: 2026-04-04T10:45:03.498Z
+Stopped at: Completed 02-llm-adapter/02-01-PLAN.md
 Resume file: None
