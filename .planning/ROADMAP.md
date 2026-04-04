@@ -34,7 +34,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **UI hint**: no
 
 Plans:
-- [ ] 01-01-PLAN.md — Project scaffold: package.json, tsconfig, vitest, shared types, config module
+- [x] 01-01-PLAN.md — Project scaffold: package.json, tsconfig, vitest, shared types, config module
 - [ ] 01-02-PLAN.md — WikiStore: sole disk writer with frontmatter validation and auto index rebuild
 - [ ] 01-03-PLAN.md — CLI wiring: Commander entry point, all 4 commands, BM25 search, stdout/stderr enforcement
 
@@ -105,7 +105,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/3 | Ready to execute | - |
+| 1. Foundation | 1/3 | In Progress|  |
 | 2. LLM Adapter | 0/TBD | Not started | - |
 | 3. Ingestion | 0/TBD | Not started | - |
 | 4. Synthesis | 0/TBD | Not started | - |
