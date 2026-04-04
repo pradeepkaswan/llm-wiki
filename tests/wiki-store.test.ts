@@ -126,5 +126,72 @@ describe('WikiStore', () => {
       expect(data.article_count).toBe(1);
       expect(typeof data.updated_at).toBe('string');
     });
+
+    it('appends log entry after rebuilding index', async () => {
+      await store.saveArticle(makeArticle());
+      const logPath = path.join(TEST_VAULT, 'log.md');
+      const logContent = await fs.readFile(logPath, 'utf8');
+      expect(logContent).toMatch(/index \| Rebuilt wiki index/);
+    });
+  });
+
+  describe('readSchema', () => {
+    it('returns null when schema.md does not exist', async () => {
+      const result = await store.readSchema();
+      expect(result).toBeNull();
+    });
+
+    it('returns file content when schema.md exists', async () => {
+      const schemaContent = '# Test Schema\n\nSome content here.';
+      await fs.writeFile(path.join(TEST_VAULT, 'schema.md'), schemaContent, 'utf8');
+      const result = await store.readSchema();
+      expect(result).toBe(schemaContent);
+    });
+  });
+
+  describe('updateSchema', () => {
+    it('writes schema.md to vault root atomically', async () => {
+      await store.updateSchema('# Test Schema');
+      const content = await fs.readFile(path.join(TEST_VAULT, 'schema.md'), 'utf8');
+      expect(content).toBe('# Test Schema');
+    });
+
+    it('appends schema log entry after write', async () => {
+      await store.updateSchema('content');
+      const logContent = await fs.readFile(path.join(TEST_VAULT, 'log.md'), 'utf8');
+      expect(logContent).toMatch(/## \[\d{4}-\d{2}-\d{2} \d{2}:\d{2}\] schema \| Updated schema taxonomy/);
+    });
+  });
+
+  describe('appendLog', () => {
+    it('creates log.md and writes entry when file does not exist', async () => {
+      await store.appendLog('create', 'Created article flash-attention');
+      const logContent = await fs.readFile(path.join(TEST_VAULT, 'log.md'), 'utf8');
+      expect(logContent).toMatch(/## \[\d{4}-\d{2}-\d{2} \d{2}:\d{2}\] create \| Created article flash-attention/);
+    });
+
+    it('appends to existing log.md without overwriting', async () => {
+      const existingContent = '## [2026-04-04 10:00] init | Initial entry\n';
+      await fs.writeFile(path.join(TEST_VAULT, 'log.md'), existingContent, 'utf8');
+      await store.appendLog('update', 'Updated article');
+      const logContent = await fs.readFile(path.join(TEST_VAULT, 'log.md'), 'utf8');
+      expect(logContent).toContain('init | Initial entry');
+      expect(logContent).toMatch(/update \| Updated article/);
+    });
+
+    it('produces parseable timestamp format YYYY-MM-DD HH:MM', async () => {
+      await store.appendLog('test', 'timestamp check');
+      const logContent = await fs.readFile(path.join(TEST_VAULT, 'log.md'), 'utf8');
+      expect(logContent).toMatch(/## \[\d{4}-\d{2}-\d{2} \d{2}:\d{2}\] test \| timestamp check/);
+    });
+  });
+
+  describe('saveArticle with logging', () => {
+    it('appends log entry after saving article', async () => {
+      await store.saveArticle(makeArticle());
+      const logPath = path.join(TEST_VAULT, 'log.md');
+      const logContent = await fs.readFile(logPath, 'utf8');
+      expect(logContent).toMatch(/create \| /);
+    });
   });
 });
