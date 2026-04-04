@@ -100,7 +100,21 @@ describe('ask command — ingestion pipeline wiring', () => {
         vault_path: '/tmp/test-vault',
         llm_provider: 'claude',
         search_provider: 'exa',
+        coverage_threshold: 5.0,
       }),
+    }));
+
+    // Phase 5: mock assessCoverage to return not covered — fall through to web search
+    vi.doMock('../src/retrieval/orchestrator.js', () => ({
+      assessCoverage: vi.fn().mockResolvedValue({ covered: false, articles: [] }),
+    }));
+
+    vi.doMock('../src/retrieval/wiki-answer.js', () => ({
+      generateWikiAnswer: vi.fn(),
+    }));
+
+    vi.doMock('../src/retrieval/article-filer.js', () => ({
+      fileAnswerAsArticle: vi.fn(),
     }));
 
     vi.doMock('../src/search/search-provider.js', () => ({
@@ -179,7 +193,21 @@ describe('ask command — ingestion pipeline wiring', () => {
         vault_path: '/tmp/test-vault',
         llm_provider: 'claude',
         search_provider: 'exa',
+        coverage_threshold: 5.0,
       }),
+    }));
+
+    // Phase 5: mock assessCoverage to return not covered — fall through to web search
+    vi.doMock('../src/retrieval/orchestrator.js', () => ({
+      assessCoverage: vi.fn().mockResolvedValue({ covered: false, articles: [] }),
+    }));
+
+    vi.doMock('../src/retrieval/wiki-answer.js', () => ({
+      generateWikiAnswer: vi.fn(),
+    }));
+
+    vi.doMock('../src/retrieval/article-filer.js', () => ({
+      fileAnswerAsArticle: vi.fn(),
     }));
 
     vi.doMock('../src/search/search-provider.js', () => ({
@@ -246,7 +274,21 @@ describe('ask command — ingestion pipeline wiring', () => {
         vault_path: '/tmp/test-vault',
         llm_provider: 'claude',
         search_provider: 'exa',
+        coverage_threshold: 5.0,
       }),
+    }));
+
+    // Phase 5: mock assessCoverage to return not covered — fall through to web search
+    vi.doMock('../src/retrieval/orchestrator.js', () => ({
+      assessCoverage: vi.fn().mockResolvedValue({ covered: false, articles: [] }),
+    }));
+
+    vi.doMock('../src/retrieval/wiki-answer.js', () => ({
+      generateWikiAnswer: vi.fn(),
+    }));
+
+    vi.doMock('../src/retrieval/article-filer.js', () => ({
+      fileAnswerAsArticle: vi.fn(),
     }));
 
     vi.doMock('../src/search/search-provider.js', () => ({
@@ -317,7 +359,21 @@ describe('ask command — ingestion pipeline wiring', () => {
         vault_path: '/tmp/test-vault',
         llm_provider: 'claude',
         search_provider: 'exa',
+        coverage_threshold: 5.0,
       }),
+    }));
+
+    // Phase 5: mock assessCoverage to return not covered — fall through to web search
+    vi.doMock('../src/retrieval/orchestrator.js', () => ({
+      assessCoverage: vi.fn().mockResolvedValue({ covered: false, articles: [] }),
+    }));
+
+    vi.doMock('../src/retrieval/wiki-answer.js', () => ({
+      generateWikiAnswer: vi.fn(),
+    }));
+
+    vi.doMock('../src/retrieval/article-filer.js', () => ({
+      fileAnswerAsArticle: vi.fn(),
     }));
 
     vi.doMock('../src/search/search-provider.js', () => ({
@@ -561,5 +617,406 @@ describe('ingest command — URL ingestion pipeline wiring', () => {
 
     expect(exitSpy).toHaveBeenCalledWith(1);
     exitSpy.mockRestore();
+  });
+});
+
+// --- Unit tests for Phase 5 retrieval routing ---
+
+function makeArticle(slug: string, title: string, body: string) {
+  return {
+    slug,
+    frontmatter: {
+      title,
+      tags: [],
+      categories: ['General'],
+      sources: [],
+      sourced_at: '2026-04-04T00:00:00.000Z',
+      type: 'web' as const,
+      created_at: '2026-04-04T00:00:00.000Z',
+      updated_at: '2026-04-04T00:00:00.000Z',
+      summary: `Summary of ${title}`,
+    },
+    body,
+  };
+}
+
+describe('ask command — Phase 5 retrieval routing', () => {
+  beforeEach(() => {
+    vi.resetModules();
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('routes to wiki answer when coverage is sufficient', async () => {
+    const mockArticle = makeArticle('flash-attention', 'Flash Attention', 'Flash attention body text');
+
+    vi.doMock('../src/config/config.js', () => ({
+      loadConfig: vi.fn().mockResolvedValue({
+        vault_path: '/tmp/test-vault',
+        llm_provider: 'claude',
+        search_provider: 'exa',
+        coverage_threshold: 5.0,
+      }),
+    }));
+
+    vi.doMock('../src/store/wiki-store.js', () => ({
+      WikiStore: class MockWikiStore {
+        constructor() {}
+      },
+    }));
+
+    const assessCoverageMock = vi.fn().mockResolvedValue({ covered: true, articles: [mockArticle] });
+    vi.doMock('../src/retrieval/orchestrator.js', () => ({
+      assessCoverage: assessCoverageMock,
+    }));
+
+    const generateWikiAnswerMock = vi.fn().mockResolvedValue('This is the wiki answer');
+    vi.doMock('../src/retrieval/wiki-answer.js', () => ({
+      generateWikiAnswer: generateWikiAnswerMock,
+    }));
+
+    vi.doMock('../src/retrieval/article-filer.js', () => ({
+      fileAnswerAsArticle: vi.fn(),
+    }));
+
+    const searchMock = vi.fn().mockResolvedValue([]);
+    vi.doMock('../src/search/search-provider.js', () => ({
+      createSearchProvider: vi.fn().mockReturnValue({ search: searchMock }),
+    }));
+
+    vi.doMock('readline', () => ({
+      createInterface: vi.fn().mockReturnValue({
+        question: vi.fn().mockImplementation((_prompt: string, cb: (answer: string) => void) => {
+          cb('n');
+        }),
+        close: vi.fn(),
+      }),
+    }));
+
+    const { askCommand } = await import('../src/commands/ask.js');
+
+    const stdoutSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    vi.spyOn(process, 'exit').mockImplementation((() => {}) as never);
+
+    await askCommand.parseAsync(['node', 'wiki', 'test question']);
+
+    // Wiki answer function was called
+    expect(generateWikiAnswerMock).toHaveBeenCalled();
+    // Web search was NOT called (wiki path taken)
+    expect(searchMock).not.toHaveBeenCalled();
+    // Answer was written to stdout
+    expect(stdoutSpy).toHaveBeenCalledWith('This is the wiki answer\n');
+
+    stdoutSpy.mockRestore();
+  });
+
+  it('falls through to web search when coverage is insufficient', async () => {
+    vi.doMock('../src/config/config.js', () => ({
+      loadConfig: vi.fn().mockResolvedValue({
+        vault_path: '/tmp/test-vault',
+        llm_provider: 'claude',
+        search_provider: 'exa',
+        coverage_threshold: 5.0,
+      }),
+    }));
+
+    vi.doMock('../src/store/wiki-store.js', () => ({
+      WikiStore: class MockWikiStore {
+        constructor() {}
+      },
+    }));
+
+    vi.doMock('../src/retrieval/orchestrator.js', () => ({
+      assessCoverage: vi.fn().mockResolvedValue({ covered: false, articles: [] }),
+    }));
+
+    vi.doMock('../src/retrieval/wiki-answer.js', () => ({
+      generateWikiAnswer: vi.fn(),
+    }));
+
+    vi.doMock('../src/retrieval/article-filer.js', () => ({
+      fileAnswerAsArticle: vi.fn(),
+    }));
+
+    const searchMock = vi.fn().mockResolvedValue([
+      { url: 'https://example.com/article', title: 'Test Article', rank: 1 },
+    ]);
+    vi.doMock('../src/search/search-provider.js', () => ({
+      createSearchProvider: vi.fn().mockReturnValue({ search: searchMock }),
+    }));
+
+    vi.doMock('../src/ingestion/fetcher.js', () => ({
+      fetchUrl: vi.fn().mockResolvedValue({
+        body: new TextEncoder().encode('<html><body>Content</body></html>').buffer,
+        contentType: 'text/html',
+      }),
+      isPdf: vi.fn().mockReturnValue(false),
+      normalizeArxivUrl: vi.fn().mockImplementation((url: string) => url),
+    }));
+
+    vi.doMock('../src/ingestion/extractor.js', () => ({
+      extractFromHtml: vi.fn().mockReturnValue({
+        title: 'Test Article',
+        markdown: 'Test content about AI. '.repeat(50),
+      }),
+    }));
+
+    vi.doMock('../src/ingestion/pdf-extractor.js', () => ({
+      extractFromPdf: vi.fn().mockResolvedValue(''),
+    }));
+
+    vi.doMock('../src/ingestion/quality.js', () => ({
+      checkQuality: vi.fn().mockReturnValue({ excluded: false, reason: null }),
+    }));
+
+    vi.doMock('../src/ingestion/raw-store.js', () => ({
+      storeSourceEnvelopes: vi.fn().mockResolvedValue('/tmp/dir'),
+      questionToSlug: vi.fn().mockReturnValue('test'),
+    }));
+
+    vi.doMock('../src/synthesis/synthesizer.js', () => ({
+      synthesize: vi.fn().mockResolvedValue({ articles: [], updatedSlugs: [] }),
+    }));
+
+    const { askCommand } = await import('../src/commands/ask.js');
+
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    vi.spyOn(process, 'exit').mockImplementation((() => {}) as never);
+
+    await askCommand.parseAsync(['node', 'wiki', 'test question']);
+
+    // Web search WAS called (wiki coverage insufficient)
+    expect(searchMock).toHaveBeenCalled();
+  });
+
+  it('ask --web skips wiki check entirely', async () => {
+    vi.doMock('../src/config/config.js', () => ({
+      loadConfig: vi.fn().mockResolvedValue({
+        vault_path: '/tmp/test-vault',
+        llm_provider: 'claude',
+        search_provider: 'exa',
+        coverage_threshold: 5.0,
+      }),
+    }));
+
+    vi.doMock('../src/store/wiki-store.js', () => ({
+      WikiStore: class MockWikiStore {
+        constructor() {}
+      },
+    }));
+
+    const assessCoverageMock = vi.fn().mockResolvedValue({ covered: false, articles: [] });
+    vi.doMock('../src/retrieval/orchestrator.js', () => ({
+      assessCoverage: assessCoverageMock,
+    }));
+
+    vi.doMock('../src/retrieval/wiki-answer.js', () => ({
+      generateWikiAnswer: vi.fn(),
+    }));
+
+    vi.doMock('../src/retrieval/article-filer.js', () => ({
+      fileAnswerAsArticle: vi.fn(),
+    }));
+
+    const searchMock = vi.fn().mockResolvedValue([
+      { url: 'https://example.com/article', title: 'Test Article', rank: 1 },
+    ]);
+    vi.doMock('../src/search/search-provider.js', () => ({
+      createSearchProvider: vi.fn().mockReturnValue({ search: searchMock }),
+    }));
+
+    vi.doMock('../src/ingestion/fetcher.js', () => ({
+      fetchUrl: vi.fn().mockResolvedValue({
+        body: new TextEncoder().encode('<html><body>Content</body></html>').buffer,
+        contentType: 'text/html',
+      }),
+      isPdf: vi.fn().mockReturnValue(false),
+      normalizeArxivUrl: vi.fn().mockImplementation((url: string) => url),
+    }));
+
+    vi.doMock('../src/ingestion/extractor.js', () => ({
+      extractFromHtml: vi.fn().mockReturnValue({
+        title: 'Test Article',
+        markdown: 'Test content. '.repeat(50),
+      }),
+    }));
+
+    vi.doMock('../src/ingestion/pdf-extractor.js', () => ({
+      extractFromPdf: vi.fn().mockResolvedValue(''),
+    }));
+
+    vi.doMock('../src/ingestion/quality.js', () => ({
+      checkQuality: vi.fn().mockReturnValue({ excluded: false, reason: null }),
+    }));
+
+    vi.doMock('../src/ingestion/raw-store.js', () => ({
+      storeSourceEnvelopes: vi.fn().mockResolvedValue('/tmp/dir'),
+      questionToSlug: vi.fn().mockReturnValue('test'),
+    }));
+
+    vi.doMock('../src/synthesis/synthesizer.js', () => ({
+      synthesize: vi.fn().mockResolvedValue({ articles: [], updatedSlugs: [] }),
+    }));
+
+    const { askCommand } = await import('../src/commands/ask.js');
+
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    vi.spyOn(process, 'exit').mockImplementation((() => {}) as never);
+
+    // Pass --web flag
+    await askCommand.parseAsync(['node', 'wiki', 'test question', '--web']);
+
+    // assessCoverage was NOT called (--web skips wiki check)
+    expect(assessCoverageMock).not.toHaveBeenCalled();
+    // Web search WAS called
+    expect(searchMock).toHaveBeenCalled();
+  });
+
+  it('stderr contains [WIKI] when answering from wiki', async () => {
+    const mockArticle = makeArticle('test-article', 'Test Article', 'Test body');
+
+    vi.doMock('../src/config/config.js', () => ({
+      loadConfig: vi.fn().mockResolvedValue({
+        vault_path: '/tmp/test-vault',
+        llm_provider: 'claude',
+        search_provider: 'exa',
+        coverage_threshold: 5.0,
+      }),
+    }));
+
+    vi.doMock('../src/store/wiki-store.js', () => ({
+      WikiStore: class MockWikiStore {
+        constructor() {}
+      },
+    }));
+
+    vi.doMock('../src/retrieval/orchestrator.js', () => ({
+      assessCoverage: vi.fn().mockResolvedValue({ covered: true, articles: [mockArticle] }),
+    }));
+
+    vi.doMock('../src/retrieval/wiki-answer.js', () => ({
+      generateWikiAnswer: vi.fn().mockResolvedValue('Wiki answer text'),
+    }));
+
+    vi.doMock('../src/retrieval/article-filer.js', () => ({
+      fileAnswerAsArticle: vi.fn(),
+    }));
+
+    vi.doMock('../src/search/search-provider.js', () => ({
+      createSearchProvider: vi.fn().mockReturnValue({ search: vi.fn() }),
+    }));
+
+    vi.doMock('readline', () => ({
+      createInterface: vi.fn().mockReturnValue({
+        question: vi.fn().mockImplementation((_prompt: string, cb: (answer: string) => void) => {
+          cb('n');
+        }),
+        close: vi.fn(),
+      }),
+    }));
+
+    const { askCommand } = await import('../src/commands/ask.js');
+
+    const stderrMessages: string[] = [];
+    vi.spyOn(process.stderr, 'write').mockImplementation((msg: unknown) => {
+      stderrMessages.push(String(msg));
+      return true;
+    });
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    vi.spyOn(process, 'exit').mockImplementation((() => {}) as never);
+
+    await askCommand.parseAsync(['node', 'wiki', 'test question']);
+
+    expect(stderrMessages.some((m) => m.includes('[WIKI]'))).toBe(true);
+  });
+
+  it('stderr contains [WEB] when falling through to web search', async () => {
+    vi.doMock('../src/config/config.js', () => ({
+      loadConfig: vi.fn().mockResolvedValue({
+        vault_path: '/tmp/test-vault',
+        llm_provider: 'claude',
+        search_provider: 'exa',
+        coverage_threshold: 5.0,
+      }),
+    }));
+
+    vi.doMock('../src/store/wiki-store.js', () => ({
+      WikiStore: class MockWikiStore {
+        constructor() {}
+      },
+    }));
+
+    vi.doMock('../src/retrieval/orchestrator.js', () => ({
+      assessCoverage: vi.fn().mockResolvedValue({ covered: false, articles: [] }),
+    }));
+
+    vi.doMock('../src/retrieval/wiki-answer.js', () => ({
+      generateWikiAnswer: vi.fn(),
+    }));
+
+    vi.doMock('../src/retrieval/article-filer.js', () => ({
+      fileAnswerAsArticle: vi.fn(),
+    }));
+
+    vi.doMock('../src/search/search-provider.js', () => ({
+      createSearchProvider: vi.fn().mockReturnValue({
+        search: vi.fn().mockResolvedValue([
+          { url: 'https://example.com/article', title: 'Test Article', rank: 1 },
+        ]),
+      }),
+    }));
+
+    vi.doMock('../src/ingestion/fetcher.js', () => ({
+      fetchUrl: vi.fn().mockResolvedValue({
+        body: new TextEncoder().encode('<html><body>Content</body></html>').buffer,
+        contentType: 'text/html',
+      }),
+      isPdf: vi.fn().mockReturnValue(false),
+      normalizeArxivUrl: vi.fn().mockImplementation((url: string) => url),
+    }));
+
+    vi.doMock('../src/ingestion/extractor.js', () => ({
+      extractFromHtml: vi.fn().mockReturnValue({
+        title: 'Test Article',
+        markdown: 'Test content. '.repeat(50),
+      }),
+    }));
+
+    vi.doMock('../src/ingestion/pdf-extractor.js', () => ({
+      extractFromPdf: vi.fn().mockResolvedValue(''),
+    }));
+
+    vi.doMock('../src/ingestion/quality.js', () => ({
+      checkQuality: vi.fn().mockReturnValue({ excluded: false, reason: null }),
+    }));
+
+    vi.doMock('../src/ingestion/raw-store.js', () => ({
+      storeSourceEnvelopes: vi.fn().mockResolvedValue('/tmp/dir'),
+      questionToSlug: vi.fn().mockReturnValue('test'),
+    }));
+
+    vi.doMock('../src/synthesis/synthesizer.js', () => ({
+      synthesize: vi.fn().mockResolvedValue({ articles: [], updatedSlugs: [] }),
+    }));
+
+    const { askCommand } = await import('../src/commands/ask.js');
+
+    const stderrMessages: string[] = [];
+    vi.spyOn(process.stderr, 'write').mockImplementation((msg: unknown) => {
+      stderrMessages.push(String(msg));
+      return true;
+    });
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    vi.spyOn(process, 'exit').mockImplementation((() => {}) as never);
+
+    await askCommand.parseAsync(['node', 'wiki', 'test question']);
+
+    expect(stderrMessages.some((m) => m.includes('[WEB]'))).toBe(true);
   });
 });
