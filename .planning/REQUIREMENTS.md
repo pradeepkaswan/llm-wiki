@@ -47,9 +47,40 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Integration
 
-- [ ] **INTG-01**: OpenClaw skill allows querying the wiki from any OpenClaw-connected interface (Telegram, Claude Code, etc.)
+- [x] **INTG-01**: OpenClaw skill allows querying the wiki from any OpenClaw-connected interface (Telegram, Claude Code, etc.)
 - [x] **INTG-02**: CLI outputs are non-TTY safe (clean stdout, proper exit codes) for programmatic use
-- [ ] **INTG-03**: Article freshness tracked via `sourced_at` frontmatter + `--refresh` flag to update stale articles
+- [x] **INTG-03**: Article freshness tracked via `sourced_at` frontmatter + `--refresh` flag to update stale articles
+
+### Schema Layer (Karpathy Layer 3)
+
+- [ ] **SCHEMA-01**: Wiki schema file (`schema.md`) in the vault defines conventions, page types, frontmatter rules, naming patterns, and LLM maintenance instructions — co-evolved with usage
+- [ ] **SCHEMA-02**: LLM reads schema.md before every synthesis/ingest operation and follows its conventions (page structure, category taxonomy, wikilink style)
+
+### Multi-Page Ingest
+
+- [ ] **MULTI-01**: A single source ingestion touches 10-15 existing wiki pages — not just creates one article. Ingesting "flash attention" should also update the transformer page, attention mechanisms page, training optimization page, etc.
+- [ ] **MULTI-02**: After synthesizing the primary article, the LLM identifies existing articles that should cross-reference or incorporate findings from the new source, and updates them
+
+### Activity Log
+
+- [ ] **LOG-01**: `log.md` in the vault is an append-only chronological record of all wiki operations — ingests, queries, article creates/updates, lint runs — with parseable timestamps and operation types
+- [ ] **LOG-02**: Every wiki mutation (article create, update, index rebuild) appends a log entry with format `## [YYYY-MM-DD HH:MM] operation | description`
+
+### Lint + Heal (promoted from v2)
+
+- [ ] **LINT-01**: `wiki lint` command scans the wiki for contradictions between articles, orphan pages (no inbound links), missing cross-references, stale claims (old `sourced_at`), and concepts mentioned but lacking their own page
+- [ ] **LINT-02**: Lint results are structured and actionable — each finding has a category, severity, affected articles, and suggested fix
+- [ ] **LINT-03**: `wiki heal` command auto-fixes lint findings — creates missing pages, adds missing cross-references, flags contradictions for human review, updates stale content via `--refresh`
+
+### Broad Filing
+
+- [ ] **LOOP-04**: Not just Q&A answers — comparisons, analyses, discovered connections, and any valuable LLM output can be filed back into the wiki as durable artifacts
+- [ ] **LOOP-05**: `wiki file` command takes freeform text (piped or argument) and the LLM decides where it belongs in the wiki — new page, update to existing page, or split across multiple pages
+
+### Obsidian Graph Integrity
+
+- [ ] **GRAPH-01**: Backlinks are bidirectional — when article A links to B, article B is updated to include a backlink to A (ensures Obsidian graph view shows full connectivity)
+- [ ] **GRAPH-02**: `wiki ask` and `wiki ingest` verify and repair bidirectional links after every write operation
 
 ## v2 Requirements
 
@@ -58,7 +89,6 @@ Deferred to future release. Tracked but not in current roadmap.
 ### Quality
 
 - **QUAL-01**: Source quality filtering (detect paywalls, empty pages, low-quality results)
-- **QUAL-02**: Lint + Heal automation (find inconsistencies, impute missing info, suggest new articles)
 
 ### Integration
 
@@ -111,15 +141,28 @@ Deferred to future release. Tracked but not in current roadmap.
 | LOOP-01 | Phase 5 | Complete |
 | LOOP-02 | Phase 5 | Complete |
 | LOOP-03 | Phase 5 | Complete |
-| INTG-01 | Phase 6 | Pending |
+| INTG-01 | Phase 6 | Complete |
 | INTG-02 | Phase 1 | Complete |
-| INTG-03 | Phase 6 | Pending |
+| INTG-03 | Phase 6 | Complete |
+| SCHEMA-01 | Phase 7 | Pending |
+| SCHEMA-02 | Phase 7 | Pending |
+| MULTI-01 | Phase 8 | Pending |
+| MULTI-02 | Phase 8 | Pending |
+| LOG-01 | Phase 7 | Pending |
+| LOG-02 | Phase 7 | Pending |
+| LINT-01 | Phase 9 | Pending |
+| LINT-02 | Phase 9 | Pending |
+| LINT-03 | Phase 9 | Pending |
+| LOOP-04 | Phase 8 | Pending |
+| LOOP-05 | Phase 8 | Pending |
+| GRAPH-01 | Phase 8 | Pending |
+| GRAPH-02 | Phase 8 | Pending |
 
 **Coverage:**
-- v1 requirements: 26 total
-- Mapped to phases: 26
+- v1 requirements (Phases 1-6): 26 total, 26 complete
+- v1.1 requirements (Phases 7-9, Karpathy alignment): 12 total, 0 complete
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-03*
-*Last updated: 2026-04-03 after roadmap creation*
+*Last updated: 2026-04-05 — added Karpathy-aligned requirements (schema, multi-page, log, lint, broad filing, graph integrity)*

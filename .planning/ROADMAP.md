@@ -2,7 +2,7 @@
 
 ## Overview
 
-Six phases build the compounding knowledge engine layer by layer. Foundation first — working file store and CLI skeleton with zero network or LLM dependencies. Then the LLM abstraction and config system, so every subsequent phase builds against a stable interface rather than a specific provider. Then ingestion (web search to raw files), then synthesis (raw files to wiki articles). Phase 5 closes the loop: BM25 retrieval, orchestrator routing, and the feedback mechanism that files Q&A answers back into the wiki — the core differentiator. Phase 6 wraps the stable CLI as an OpenClaw skill, a thin layer with no new logic.
+Nine phases build the compounding knowledge engine. Phases 1-6 (v1.0, complete) deliver the core pipeline: foundation, LLM adapter, ingestion, synthesis, retrieval feedback loop, and OpenClaw skill. Phases 7-9 (v1.1, Karpathy alignment) close the gap with Karpathy's full LLM wiki vision: a schema layer that teaches the LLM wiki conventions, multi-page ingest that ripples knowledge across 10-15 existing articles per source, an activity log, lint+heal for wiki health, broad filing of any valuable output, and bidirectional backlinks for Obsidian graph integrity.
 
 ## Phases
 
@@ -17,7 +17,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Ingestion** - Web search, HTML extraction, raw source storage, URL ingestion (completed 2026-04-04)
 - [x] **Phase 4: Synthesis** - LLM article generation, citations, backlinks, dedup, provenance (completed 2026-04-04)
 - [x] **Phase 5: Retrieval + Feedback Loop** - BM25 search, orchestrator routing, Q&A filing (completed 2026-04-04)
-- [ ] **Phase 6: OpenClaw Skill** - Integration wrapper for Telegram/Claude Code access + freshness refresh
+- [x] **Phase 6: OpenClaw Skill** - Integration wrapper for Telegram/Claude Code access + freshness refresh (completed 2026-04-05)
+- [ ] **Phase 7: Schema + Activity Log** - Wiki schema file (LLM maintenance instructions) and append-only log.md
+- [ ] **Phase 8: Multi-Page Ingest + Broad Filing + Graph** - Ripple updates across 10-15 pages per source, file any output, bidirectional backlinks
+- [ ] **Phase 9: Lint + Heal** - Wiki health checks (contradictions, orphans, stale claims, missing pages) and auto-fix
 
 ## Phase Details
 
@@ -120,10 +123,46 @@ Plans:
 - [x] 06-01-PLAN.md — Config extension (freshness_days), --refresh flag, non-TTY guard, tests
 - [x] 06-02-PLAN.md — OpenClaw SKILL.md creation, npm packaging (prepare, files), human verification
 
+### Phase 7: Schema + Activity Log
+**Goal**: The wiki has a self-describing schema file that teaches the LLM how to maintain it, and a chronological log of every operation — establishing the "three-layer architecture" from Karpathy's design
+**Depends on**: Phase 6
+**Requirements**: SCHEMA-01, SCHEMA-02, LOG-01, LOG-02
+**Success Criteria** (what must be TRUE):
+  1. A `schema.md` file exists in the vault root, defining page types, frontmatter conventions, category taxonomy, and wikilink style — the LLM reads it before every synthesis operation
+  2. The schema co-evolves: running `wiki ask` for a topic not covered by existing categories prompts the LLM to propose a schema update
+  3. A `log.md` file in the vault appends a timestamped entry for every wiki mutation (article create, update, index rebuild, lint run)
+  4. `log.md` entries follow a parseable format: `## [YYYY-MM-DD HH:MM] operation | description`
+**Plans**: TBD
+**UI hint**: no
+
+### Phase 8: Multi-Page Ingest + Broad Filing + Graph
+**Goal**: A single source ripples knowledge across the entire wiki — not just one article. Any valuable LLM output (comparisons, analyses, connections) can be filed back. Backlinks are bidirectional for Obsidian graph view.
+**Depends on**: Phase 7
+**Requirements**: MULTI-01, MULTI-02, LOOP-04, LOOP-05, GRAPH-01, GRAPH-02
+**Success Criteria** (what must be TRUE):
+  1. Running `wiki ask "flash attention"` creates/updates the primary article AND updates 5+ existing related articles (e.g., transformer, attention mechanisms, training optimization) with cross-references and new findings
+  2. Running `wiki file "Flash attention is faster than standard attention because..."` files the content into the appropriate existing article(s) or creates new ones — the LLM decides placement
+  3. After any article write, every `[[wikilink]]` target has a reciprocal backlink to the source article — Obsidian graph view shows full bidirectional connectivity
+  4. `log.md` records all ripple updates (not just the primary article)
+**Plans**: TBD
+**UI hint**: no
+
+### Phase 9: Lint + Heal
+**Goal**: The wiki maintains its own health — finding contradictions, orphan pages, stale claims, and missing concepts, then auto-fixing what it can
+**Depends on**: Phase 8
+**Requirements**: LINT-01, LINT-02, LINT-03
+**Success Criteria** (what must be TRUE):
+  1. Running `wiki lint` produces a structured report of contradictions between articles, orphan pages (no inbound links), concepts mentioned but lacking their own page, stale articles (old `sourced_at`), and missing cross-references
+  2. Each lint finding has a category, severity, affected articles, and a concrete suggested fix
+  3. Running `wiki heal` auto-fixes findings: creates missing concept pages, adds missing cross-references, re-fetches stale articles via `--refresh`, flags contradictions for human review
+  4. Lint + heal append to `log.md` like any other wiki operation
+**Plans**: TBD
+**UI hint**: no
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -132,4 +171,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 3. Ingestion | 3/3 | Complete   | 2026-04-04 |
 | 4. Synthesis | 3/3 | Complete   | 2026-04-04 |
 | 5. Retrieval + Feedback Loop | 3/3 | Complete   | 2026-04-04 |
-| 6. OpenClaw Skill | 0/2 | Not started | - |
+| 6. OpenClaw Skill | 2/2 | Complete   | 2026-04-05 |
+| 7. Schema + Activity Log | 0/TBD | Not started | - |
+| 8. Multi-Page Ingest + Broad Filing + Graph | 0/TBD | Not started | - |
+| 9. Lint + Heal | 0/TBD | Not started | - |
