@@ -18,17 +18,17 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Ingestion
 
 - [x] **INGEST-01**: System searches the web via Exa API (neural search) to find sources for a question
-- [ ] **INGEST-02**: System fetches web pages and extracts article body as clean markdown
-- [ ] **INGEST-03**: Raw unprocessed sources are preserved in `~/.llm-wiki/raw/` with metadata
+- [x] **INGEST-02**: System fetches web pages and extracts article body as clean markdown
+- [x] **INGEST-03**: Raw unprocessed sources are preserved in `~/.llm-wiki/raw/` with metadata
 - [x] **INGEST-04**: Search provider is configurable (Exa default, extensible to Brave/Tavily)
-- [ ] **INGEST-05**: User can ingest a specific URL directly (`wiki ingest <url>`) — supports web pages, PDFs, arxiv papers
+- [x] **INGEST-05**: User can ingest a specific URL directly (`wiki ingest <url>`) — supports web pages, PDFs, arxiv papers
 
 ### Synthesis
 
-- [ ] **SYNTH-01**: LLM synthesizes 3-5 web sources into a structured wiki article
-- [ ] **SYNTH-02**: Every claim in an article is traceable to a source URL via citations
+- [x] **SYNTH-01**: LLM synthesizes 3-5 web sources into a structured wiki article
+- [x] **SYNTH-02**: Every claim in an article is traceable to a source URL via citations
 - [ ] **SYNTH-03**: Articles include `[[wikilink]]` backlinks to related existing articles (constrained to existing article manifest)
-- [ ] **SYNTH-04**: Broad questions generate multiple linked articles (topic clustering)
+- [x] **SYNTH-04**: Broad questions generate multiple linked articles (topic clustering)
 - [ ] **SYNTH-05**: LLM decides whether to create a new article or update an existing one (deduplication)
 - [ ] **SYNTH-06**: YAML frontmatter is validated after every LLM write (prevents silent corruption)
 - [ ] **SYNTH-07**: Articles include provenance tracking in frontmatter (`sources`, `sourced_at`, `type: web|compound`)
@@ -94,14 +94,14 @@ Deferred to future release. Tracked but not in current roadmap.
 | FOUND-04 | Phase 2 | Complete |
 | FOUND-05 | Phase 2 | Complete |
 | INGEST-01 | Phase 3 | Complete |
-| INGEST-02 | Phase 3 | Pending |
-| INGEST-03 | Phase 3 | Pending |
+| INGEST-02 | Phase 3 | Complete |
+| INGEST-03 | Phase 3 | Complete |
 | INGEST-04 | Phase 3 | Complete |
-| INGEST-05 | Phase 3 | Pending |
-| SYNTH-01 | Phase 4 | Pending |
-| SYNTH-02 | Phase 4 | Pending |
+| INGEST-05 | Phase 3 | Complete |
+| SYNTH-01 | Phase 4 | Complete |
+| SYNTH-02 | Phase 4 | Complete |
 | SYNTH-03 | Phase 4 | Pending |
-| SYNTH-04 | Phase 4 | Pending |
+| SYNTH-04 | Phase 4 | Complete |
 | SYNTH-05 | Phase 4 | Pending |
 | SYNTH-06 | Phase 4 | Pending |
 | SYNTH-07 | Phase 4 | Pending |

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 4 planned — 3 plans in 3 waves
-last_updated: "2026-04-04T15:34:31.015Z"
+stopped_at: Completed 04-synthesis 04-01-PLAN.md
+last_updated: "2026-04-04T15:40:58.513Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 10
-  completed_plans: 7
+  completed_plans: 8
   percent: 0
 ---
 
@@ -21,12 +21,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-03)
 
 **Core value:** Every question you ask makes the wiki smarter — the knowledge compounds automatically.
-**Current focus:** Phase 03 — ingestion
+**Current focus:** Phase 04 — synthesis
 
 ## Current Position
 
-Phase: 4
-Plan: Not started
+Phase: 04 (synthesis) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
 Last activity: 2026-04-04
 
@@ -58,6 +58,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 02-llm-adapter P01 | 176 | 2 tasks | 6 files |
 | Phase 03-ingestion P01 | 7 | 2 tasks | 9 files |
 | Phase 03-ingestion P03 | 6 | 2 tasks | 3 files |
+| Phase 04-synthesis P01 | 4 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,10 @@ Recent decisions affecting current work:
 - [Phase 03-ingestion]: search_provider added as required Config field with 'exa' default — mirrors llm_provider pattern
 - [Phase 03-ingestion]: Commander parseAsync argv[0..1] stripped — call with ['node', 'script', ...args] not ['node', 'script', 'cmdName', ...args] for direct command testing
 - [Phase 03-ingestion]: ask command processes search results sequentially (not Promise.all) for graceful per-source failure isolation without aborting the entire batch
+- [Phase 04-synthesis]: maxOutputTokens used (not maxTokens) — AI SDK v4+ renamed the field; verified in installed node_modules
+- [Phase 04-synthesis]: parsePlanOutput returns fallback single-plan (not throws) when ARTICLE_COUNT not found — safe pipeline continuation
+- [Phase 04-synthesis]: parseArticleOutput returns null (not throws) on missing TITLE or BODY — callers decide retry strategy per D-03
+- [Phase 04-synthesis]: Source content truncated at 3000 chars as SOURCE_CONTENT_MAX_CHARS constant — prevents token overflow with 5 sources
 
 ### Pending Todos
 
@@ -96,6 +101,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T15:34:31.004Z
-Stopped at: Phase 4 planned — 3 plans in 3 waves
-Resume file: .planning/phases/04-synthesis/04-01-PLAN.md
+Last session: 2026-04-04T15:40:58.510Z
+Stopped at: Completed 04-synthesis 04-01-PLAN.md
+Resume file: None
