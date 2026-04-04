@@ -113,8 +113,12 @@ Plans:
   1. A user can invoke `wiki ask` and `wiki search` from within a Claude Code session via the registered OpenClaw skill
   2. Running `wiki ask "..." --refresh` re-fetches web sources for an existing article when its `sourced_at` date is stale, rather than answering from cached content
   3. The skill can be installed globally (`npm install -g`) and invoked as a subprocess with clean stdout (no spinner or TTY escape codes)
-**Plans**: TBD
+**Plans**: 2 plans
 **UI hint**: no
+
+Plans:
+- [ ] 06-01-PLAN.md — Config extension (freshness_days), --refresh flag, non-TTY guard, tests
+- [ ] 06-02-PLAN.md — OpenClaw SKILL.md creation, npm packaging (prepare, files), human verification
 
 ## Progress
 
@@ -128,4 +132,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 3. Ingestion | 3/3 | Complete   | 2026-04-04 |
 | 4. Synthesis | 3/3 | Complete   | 2026-04-04 |
 | 5. Retrieval + Feedback Loop | 3/3 | Complete   | 2026-04-04 |
-| 6. OpenClaw Skill | 0/TBD | Not started | - |
+| 6. OpenClaw Skill | 0/2 | Not started | - |
