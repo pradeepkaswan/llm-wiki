@@ -85,7 +85,7 @@ Plans:
 
 Plans:
 - [x] 04-01-PLAN.md — Extend LLM adapter (GenerateOptions), synthesis types, prompt-builder, output-parser
-- [ ] 04-02-PLAN.md — Deduplicator (slug + BM25 + LLM tiebreak), article-builder, wikilink sanitizer
+- [x] 04-02-PLAN.md — Deduplicator (slug + BM25 + LLM tiebreak), article-builder, wikilink sanitizer
 - [ ] 04-03-PLAN.md — Synthesizer orchestrator and ask command CLI wiring
 
 ### Phase 5: Retrieval + Feedback Loop
@@ -121,6 +121,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 1. Foundation | 3/3 | Complete    | 2026-04-04 |
 | 2. LLM Adapter | 1/1 | Complete   | 2026-04-04 |
 | 3. Ingestion | 3/3 | Complete   | 2026-04-04 |
-| 4. Synthesis | 1/3 | In Progress|  |
+| 4. Synthesis | 2/3 | In Progress|  |
 | 5. Retrieval + Feedback Loop | 0/TBD | Not started | - |
 | 6. OpenClaw Skill | 0/TBD | Not started | - |

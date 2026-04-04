@@ -27,11 +27,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **SYNTH-01**: LLM synthesizes 3-5 web sources into a structured wiki article
 - [x] **SYNTH-02**: Every claim in an article is traceable to a source URL via citations
-- [ ] **SYNTH-03**: Articles include `[[wikilink]]` backlinks to related existing articles (constrained to existing article manifest)
+- [x] **SYNTH-03**: Articles include `[[wikilink]]` backlinks to related existing articles (constrained to existing article manifest)
 - [x] **SYNTH-04**: Broad questions generate multiple linked articles (topic clustering)
-- [ ] **SYNTH-05**: LLM decides whether to create a new article or update an existing one (deduplication)
-- [ ] **SYNTH-06**: YAML frontmatter is validated after every LLM write (prevents silent corruption)
-- [ ] **SYNTH-07**: Articles include provenance tracking in frontmatter (`sources`, `sourced_at`, `type: web|compound`)
+- [x] **SYNTH-05**: LLM decides whether to create a new article or update an existing one (deduplication)
+- [x] **SYNTH-06**: YAML frontmatter is validated after every LLM write (prevents silent corruption)
+- [x] **SYNTH-07**: Articles include provenance tracking in frontmatter (`sources`, `sourced_at`, `type: web|compound`)
 
 ### Retrieval
 
@@ -100,11 +100,11 @@ Deferred to future release. Tracked but not in current roadmap.
 | INGEST-05 | Phase 3 | Complete |
 | SYNTH-01 | Phase 4 | Complete |
 | SYNTH-02 | Phase 4 | Complete |
-| SYNTH-03 | Phase 4 | Pending |
+| SYNTH-03 | Phase 4 | Complete |
 | SYNTH-04 | Phase 4 | Complete |
-| SYNTH-05 | Phase 4 | Pending |
-| SYNTH-06 | Phase 4 | Pending |
-| SYNTH-07 | Phase 4 | Pending |
+| SYNTH-05 | Phase 4 | Complete |
+| SYNTH-06 | Phase 4 | Complete |
+| SYNTH-07 | Phase 4 | Complete |
 | RETR-01 | Phase 5 | Pending |
 | RETR-02 | Phase 5 | Pending |
 | RETR-03 | Phase 5 | Pending |

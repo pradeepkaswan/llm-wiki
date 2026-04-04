@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-synthesis 04-01-PLAN.md
-last_updated: "2026-04-04T15:40:58.513Z"
+stopped_at: Completed 04-synthesis 04-02-PLAN.md
+last_updated: "2026-04-04T15:48:17.742Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 10
-  completed_plans: 8
+  completed_plans: 9
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 ## Current Position
 
 Phase: 04 (synthesis) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-04
 
@@ -59,6 +59,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 03-ingestion P01 | 7 | 2 tasks | 9 files |
 | Phase 03-ingestion P03 | 6 | 2 tasks | 3 files |
 | Phase 04-synthesis P01 | 4 | 2 tasks | 6 files |
+| Phase 04-synthesis P02 | 317 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -88,6 +89,9 @@ Recent decisions affecting current work:
 - [Phase 04-synthesis]: parsePlanOutput returns fallback single-plan (not throws) when ARTICLE_COUNT not found — safe pipeline continuation
 - [Phase 04-synthesis]: parseArticleOutput returns null (not throws) on missing TITLE or BODY — callers decide retry strategy per D-03
 - [Phase 04-synthesis]: Source content truncated at 3000 chars as SOURCE_CONTENT_MAX_CHARS constant — prevents token overflow with 5 sources
+- [Phase 04-synthesis]: WikiStore passed as argument in findExistingArticle() for testability without filesystem
+- [Phase 04-synthesis]: Wikilink sanitization built into both builder functions — guaranteed to run, callers cannot bypass
+- [Phase 04-synthesis]: Categories fallback to Uncategorized in both buildNewArticle and buildUpdatedArticle when LLM provides none
 
 ### Pending Todos
 
@@ -101,6 +105,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T15:40:58.510Z
-Stopped at: Completed 04-synthesis 04-01-PLAN.md
+Last session: 2026-04-04T15:48:17.739Z
+Stopped at: Completed 04-synthesis 04-02-PLAN.md
 Resume file: None
