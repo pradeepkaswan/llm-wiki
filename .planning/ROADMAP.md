@@ -101,8 +101,8 @@ Plans:
 **UI hint**: no
 
 Plans:
-- [ ] 05-01-PLAN.md — Config extension (coverage_threshold), coverage assessment engine, wiki answer generator
-- [ ] 05-02-PLAN.md — Compound article filing pipeline (Q&A-to-article conversion, dedup, wiki:// sources)
+- [x] 05-01-PLAN.md — Config extension (coverage_threshold), coverage assessment engine, wiki answer generator
+- [x] 05-02-PLAN.md — Compound article filing pipeline (Q&A-to-article conversion, dedup, wiki:// sources)
 - [ ] 05-03-PLAN.md — CLI wiring: ask command wiki-first flow, --web flag, readline confirmation, tests
 
 ### Phase 6: OpenClaw Skill
@@ -127,5 +127,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 2. LLM Adapter | 1/1 | Complete   | 2026-04-04 |
 | 3. Ingestion | 3/3 | Complete   | 2026-04-04 |
 | 4. Synthesis | 3/3 | Complete   | 2026-04-04 |
-| 5. Retrieval + Feedback Loop | 0/3 | Planning complete | - |
+| 5. Retrieval + Feedback Loop | 2/3 | In Progress|  |
 | 6. OpenClaw Skill | 0/TBD | Not started | - |

@@ -35,14 +35,14 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Retrieval
 
-- [ ] **RETR-01**: User can query the existing wiki before the system searches the web
-- [ ] **RETR-02**: System uses local index (BM25) to find 3-5 relevant articles per query
-- [ ] **RETR-03**: Orchestrator decides "answer from wiki" vs "search web" based on coverage confidence
+- [x] **RETR-01**: User can query the existing wiki before the system searches the web
+- [x] **RETR-02**: System uses local index (BM25) to find 3-5 relevant articles per query
+- [x] **RETR-03**: Orchestrator decides "answer from wiki" vs "search web" based on coverage confidence
 
 ### Feedback Loop
 
-- [ ] **LOOP-01**: Q&A answers against the wiki are filed back as new or updated articles
-- [ ] **LOOP-02**: Compound articles are marked with `type: compound` in frontmatter (distinguishable from web-sourced)
+- [x] **LOOP-01**: Q&A answers against the wiki are filed back as new or updated articles
+- [x] **LOOP-02**: Compound articles are marked with `type: compound` in frontmatter (distinguishable from web-sourced)
 - [ ] **LOOP-03**: Feedback loop is gated — user can approve/skip filing answer back into wiki
 
 ### Integration
@@ -105,11 +105,11 @@ Deferred to future release. Tracked but not in current roadmap.
 | SYNTH-05 | Phase 4 | Complete |
 | SYNTH-06 | Phase 4 | Complete |
 | SYNTH-07 | Phase 4 | Complete |
-| RETR-01 | Phase 5 | Pending |
-| RETR-02 | Phase 5 | Pending |
-| RETR-03 | Phase 5 | Pending |
-| LOOP-01 | Phase 5 | Pending |
-| LOOP-02 | Phase 5 | Pending |
+| RETR-01 | Phase 5 | Complete |
+| RETR-02 | Phase 5 | Complete |
+| RETR-03 | Phase 5 | Complete |
+| LOOP-01 | Phase 5 | Complete |
+| LOOP-02 | Phase 5 | Complete |
 | LOOP-03 | Phase 5 | Pending |
 | INTG-01 | Phase 6 | Pending |
 | INTG-02 | Phase 1 | Complete |
