@@ -61,6 +61,28 @@ describe('CLI commands wire correctly (FOUND-01)', () => {
 
 // --- Unit tests for wired ask command (using vi.mock) ---
 
+// Shared mock synthesizer result for tests that need to pass through synthesis
+const MOCK_SYNTHESIS_RESULT = {
+  articles: [
+    {
+      slug: 'flash-attention',
+      frontmatter: {
+        title: 'Flash Attention',
+        tags: [],
+        categories: ['Machine Learning'],
+        sources: ['https://example.com/paper'],
+        sourced_at: '2026-04-04T00:00:00.000Z',
+        type: 'web',
+        created_at: '2026-04-04T00:00:00.000Z',
+        updated_at: '2026-04-04T00:00:00.000Z',
+        summary: 'Flash attention is a memory-efficient attention algorithm.',
+      },
+      body: '## Overview\n\nFlash attention [1] is efficient.\n\n## Sources\n\n1. [Paper](https://example.com/paper)',
+    },
+  ],
+  updatedSlugs: [],
+};
+
 describe('ask command — ingestion pipeline wiring', () => {
   beforeEach(() => {
     vi.resetModules();
@@ -71,7 +93,7 @@ describe('ask command — ingestion pipeline wiring', () => {
     vi.restoreAllMocks();
   });
 
-  it('wires search -> fetch -> extract -> quality -> store', async () => {
+  it('wires search -> fetch -> extract -> quality -> store -> synthesize', async () => {
     // Mock all dependencies
     vi.doMock('../src/config/config.js', () => ({
       loadConfig: vi.fn().mockResolvedValue({
@@ -119,27 +141,39 @@ describe('ask command — ingestion pipeline wiring', () => {
       questionToSlug: vi.fn().mockReturnValue('test-question'),
     }));
 
+    vi.doMock('../src/synthesis/synthesizer.js', () => ({
+      synthesize: vi.fn().mockResolvedValue(MOCK_SYNTHESIS_RESULT),
+    }));
+
+    vi.doMock('../src/store/wiki-store.js', () => ({
+      WikiStore: class MockWikiStore {
+        constructor() {}
+      },
+    }));
+
     // Import command after mocks are set up
     const { askCommand } = await import('../src/commands/ask.js');
 
     // Spy on stderr to verify output goes there
     const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    const stdoutSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
     const exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {}) as never);
 
     // Note: when calling askCommand.parseAsync directly (not via program),
     // Commander strips argv[0] and argv[1], so pass ['node', 'script', '<question>']
     await askCommand.parseAsync(['node', 'wiki', 'test question']);
 
-    // Verify stderr was used (not stdout)
+    // Verify stderr was used (not stdout for progress)
     expect(stderrSpy).toHaveBeenCalled();
     // Verify process.exit(1) was NOT called (happy path)
     expect(exitSpy).not.toHaveBeenCalled();
 
     stderrSpy.mockRestore();
+    stdoutSpy.mockRestore();
     exitSpy.mockRestore();
   });
 
-  it('writes nothing to stdout', async () => {
+  it('writes article title to stdout on successful synthesis (D-17)', async () => {
     vi.doMock('../src/config/config.js', () => ({
       loadConfig: vi.fn().mockResolvedValue({
         vault_path: '/tmp/test-vault',
@@ -185,6 +219,14 @@ describe('ask command — ingestion pipeline wiring', () => {
       questionToSlug: vi.fn().mockReturnValue('test'),
     }));
 
+    vi.doMock('../src/synthesis/synthesizer.js', () => ({
+      synthesize: vi.fn().mockResolvedValue(MOCK_SYNTHESIS_RESULT),
+    }));
+
+    vi.doMock('../src/store/wiki-store.js', () => ({
+      WikiStore: class MockWikiStore { constructor() {} },
+    }));
+
     const { askCommand } = await import('../src/commands/ask.js');
 
     const stdoutSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
@@ -193,11 +235,83 @@ describe('ask command — ingestion pipeline wiring', () => {
 
     await askCommand.parseAsync(['node', 'wiki', 'test question']);
 
-    expect(stdoutSpy).not.toHaveBeenCalled();
+    // Article title should be written to stdout (per D-17)
+    expect(stdoutSpy).toHaveBeenCalledWith('Flash Attention\n');
     stdoutSpy.mockRestore();
   });
 
-  it('exits non-zero when all sources are excluded', async () => {
+  it('writes synthesis progress messages to stderr', async () => {
+    vi.doMock('../src/config/config.js', () => ({
+      loadConfig: vi.fn().mockResolvedValue({
+        vault_path: '/tmp/test-vault',
+        llm_provider: 'claude',
+        search_provider: 'exa',
+      }),
+    }));
+
+    vi.doMock('../src/search/search-provider.js', () => ({
+      createSearchProvider: vi.fn().mockReturnValue({
+        search: vi.fn().mockResolvedValue([
+          { url: 'https://example.com/article', title: 'Test Article', rank: 1 },
+        ]),
+      }),
+    }));
+
+    vi.doMock('../src/ingestion/fetcher.js', () => ({
+      fetchUrl: vi.fn().mockResolvedValue({
+        body: new TextEncoder().encode('<html><body>Content</body></html>').buffer,
+        contentType: 'text/html',
+      }),
+      isPdf: vi.fn().mockReturnValue(false),
+      normalizeArxivUrl: vi.fn().mockImplementation((url: string) => url),
+    }));
+
+    vi.doMock('../src/ingestion/extractor.js', () => ({
+      extractFromHtml: vi.fn().mockReturnValue({
+        title: 'Article',
+        markdown: 'Long content here. '.repeat(60),
+      }),
+    }));
+
+    vi.doMock('../src/ingestion/pdf-extractor.js', () => ({
+      extractFromPdf: vi.fn().mockResolvedValue(''),
+    }));
+
+    vi.doMock('../src/ingestion/quality.js', () => ({
+      checkQuality: vi.fn().mockReturnValue({ excluded: false, reason: null }),
+    }));
+
+    vi.doMock('../src/ingestion/raw-store.js', () => ({
+      storeSourceEnvelopes: vi.fn().mockResolvedValue('/tmp/dir'),
+      questionToSlug: vi.fn().mockReturnValue('test'),
+    }));
+
+    vi.doMock('../src/synthesis/synthesizer.js', () => ({
+      synthesize: vi.fn().mockResolvedValue(MOCK_SYNTHESIS_RESULT),
+    }));
+
+    vi.doMock('../src/store/wiki-store.js', () => ({
+      WikiStore: class MockWikiStore { constructor() {} },
+    }));
+
+    const { askCommand } = await import('../src/commands/ask.js');
+
+    const stderrMessages: string[] = [];
+    vi.spyOn(process.stderr, 'write').mockImplementation((msg: unknown) => {
+      stderrMessages.push(String(msg));
+      return true;
+    });
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    vi.spyOn(process, 'exit').mockImplementation((() => {}) as never);
+
+    await askCommand.parseAsync(['node', 'wiki', 'test question']);
+
+    // Progress messages must go to stderr
+    expect(stderrMessages.some((m) => m.includes('Synthesizing wiki article(s)'))).toBe(true);
+    expect(stderrMessages.some((m) => m.includes('Done:'))).toBe(true);
+  });
+
+  it('exits non-zero when all sources are excluded (existing behavior preserved)', async () => {
     vi.doMock('../src/config/config.js', () => ({
       loadConfig: vi.fn().mockResolvedValue({
         vault_path: '/tmp/test-vault',
@@ -238,6 +352,16 @@ describe('ask command — ingestion pipeline wiring', () => {
     vi.doMock('../src/ingestion/raw-store.js', () => ({
       storeSourceEnvelopes: vi.fn().mockResolvedValue('/tmp/dir'),
       questionToSlug: vi.fn().mockReturnValue('test'),
+    }));
+
+    // Note: synthesize should NOT be called when all sources are excluded
+    const synthesizeMock = vi.fn();
+    vi.doMock('../src/synthesis/synthesizer.js', () => ({
+      synthesize: synthesizeMock,
+    }));
+
+    vi.doMock('../src/store/wiki-store.js', () => ({
+      WikiStore: class MockWikiStore { constructor() {} },
     }));
 
     const { askCommand } = await import('../src/commands/ask.js');

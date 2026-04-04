@@ -6,6 +6,8 @@ import { extractFromHtml } from '../ingestion/extractor.js';
 import { extractFromPdf } from '../ingestion/pdf-extractor.js';
 import { checkQuality } from '../ingestion/quality.js';
 import { storeSourceEnvelopes, questionToSlug } from '../ingestion/raw-store.js';
+import { synthesize } from '../synthesis/synthesizer.js';
+import { WikiStore } from '../store/wiki-store.js';
 import type { RawSourceEnvelope } from '../types/ingestion.js';
 
 export const askCommand = new Command('ask')
@@ -124,8 +126,23 @@ export const askCommand = new Command('ask')
       }
 
       process.stderr.write(`Stored ${includedCount} sources (${excludedCount} excluded) at ${dir}\n`);
-      process.stderr.write(`Raw sources ready for synthesis. Run Phase 4 to generate wiki article.\n`);
-      // Nothing written to stdout — stdout stays clean for Phase 6 subprocess use
+
+      // Phase 4: Synthesize articles from raw sources
+      process.stderr.write('Synthesizing wiki article(s)...\n');
+      const store = new WikiStore(config.vault_path);
+      const result = await synthesize(dir, store);
+
+      // Per D-17: write article title(s) to stdout (machine-readable for Phase 6)
+      for (const article of result.articles) {
+        process.stdout.write(`${article.frontmatter.title}\n`);
+      }
+
+      // Summary to stderr
+      const newCount = result.articles.length - result.updatedSlugs.length;
+      const updateCount = result.updatedSlugs.length;
+      process.stderr.write(
+        `Done: ${newCount} new article(s), ${updateCount} updated article(s)\n`
+      );
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       process.stderr.write(`Error: ${message}\n`);
