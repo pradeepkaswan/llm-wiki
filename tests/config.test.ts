@@ -95,6 +95,7 @@ describe('config LLM fields', () => {
         llm_provider: 'gpt4' as 'claude',
         llm_base_url: 'http://localhost:11434',
         search_provider: 'exa',
+        coverage_threshold: 5.0,
       })
     ).toThrow(/Invalid llm_provider/);
   });
@@ -108,6 +109,7 @@ describe('config LLM fields', () => {
         llm_provider: 'gpt4' as 'claude',
         llm_base_url: 'http://localhost:11434',
         search_provider: 'exa',
+        coverage_threshold: 5.0,
       } as Parameters<typeof validateConfig>[0]);
     } catch (err) {
       errorMessage = (err as Error).message;
@@ -151,6 +153,7 @@ describe('config search_provider', () => {
         llm_provider: 'claude',
         llm_base_url: 'http://localhost:11434',
         search_provider: 'google' as 'exa',
+        coverage_threshold: 5.0,
       })
     ).toThrow(/Invalid search_provider/);
   });
@@ -164,6 +167,7 @@ describe('config search_provider', () => {
         llm_provider: 'claude',
         llm_base_url: 'http://localhost:11434',
         search_provider: 'google' as 'exa',
+        coverage_threshold: 5.0,
       });
     } catch (err) {
       errorMessage = (err as Error).message;
