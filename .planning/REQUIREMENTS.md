@@ -43,7 +43,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **LOOP-01**: Q&A answers against the wiki are filed back as new or updated articles
 - [x] **LOOP-02**: Compound articles are marked with `type: compound` in frontmatter (distinguishable from web-sourced)
-- [ ] **LOOP-03**: Feedback loop is gated — user can approve/skip filing answer back into wiki
+- [x] **LOOP-03**: Feedback loop is gated — user can approve/skip filing answer back into wiki
 
 ### Integration
 
@@ -110,7 +110,7 @@ Deferred to future release. Tracked but not in current roadmap.
 | RETR-03 | Phase 5 | Complete |
 | LOOP-01 | Phase 5 | Complete |
 | LOOP-02 | Phase 5 | Complete |
-| LOOP-03 | Phase 5 | Pending |
+| LOOP-03 | Phase 5 | Complete |
 | INTG-01 | Phase 6 | Pending |
 | INTG-02 | Phase 1 | Complete |
 | INTG-03 | Phase 6 | Pending |
