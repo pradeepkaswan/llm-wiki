@@ -35,7 +35,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 Plans:
 - [x] 01-01-PLAN.md — Project scaffold: package.json, tsconfig, vitest, shared types, config module
-- [ ] 01-02-PLAN.md — WikiStore: sole disk writer with frontmatter validation and auto index rebuild
+- [x] 01-02-PLAN.md — WikiStore: sole disk writer with frontmatter validation and auto index rebuild
 - [ ] 01-03-PLAN.md — CLI wiring: Commander entry point, all 4 commands, BM25 search, stdout/stderr enforcement
 
 ### Phase 2: LLM Adapter
