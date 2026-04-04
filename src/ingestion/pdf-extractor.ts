@@ -1,8 +1,8 @@
 import { PDFParse } from 'pdf-parse';
 
 export async function extractFromPdf(buffer: ArrayBuffer): Promise<string> {
-  const parser = new PDFParse();
-  const result = await parser.parse(Buffer.from(buffer));
+  const parser = new PDFParse({ data: buffer });
+  const result = await parser.getText();
   // Convert to basic Markdown: preserve paragraph breaks
   return result.text
     .split(/\n{2,}/)

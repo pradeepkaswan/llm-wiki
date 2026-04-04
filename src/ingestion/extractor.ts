@@ -15,6 +15,6 @@ export function extractFromHtml(html: string, url: string): ExtractResult | null
   const reader = new Readability(dom.window.document);
   const article = reader.parse();
   if (!article) return null;
-  const markdown = turndown.turndown(article.content);
+  const markdown = turndown.turndown(article.content ?? '');
   return { title: article.title ?? '', markdown };
 }

@@ -3,14 +3,23 @@ import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 
-// Module-level mock for pdf-parse — hoisted automatically by vitest
+// Module-level mocks — hoisted automatically by vitest (must be at top level)
 vi.mock('pdf-parse', () => ({
   PDFParse: class {
-    async parse(_buf: Buffer) {
+    constructor(_options: unknown) {}
+    async getText() {
       return { text: 'First paragraph of content.\n\nSecond paragraph here.' };
     }
   },
 }));
+
+vi.mock('../src/config/config.js', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../src/config/config.js')>();
+  return {
+    ...original,
+    CONFIG_DIR: '/tmp/llm-wiki-test-placeholder',
+  };
+});
 
 // ─── fetcher tests ────────────────────────────────────────────────────────────
 
@@ -220,5 +229,152 @@ describe('quality', () => {
     const result = checkQuality(content);
     expect(result.excluded).toBe(true);
     expect(result.reason).toMatch(/paywall_detected/);
+  });
+});
+
+// ─── raw-store tests ──────────────────────────────────────────────────────────
+
+describe('raw-store', () => {
+  let tmpDir: string;
+
+  beforeEach(async () => {
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'llm-wiki-test-'));
+    // Override the mocked CONFIG_DIR value
+    const configMod = await import('../src/config/config.js');
+    (configMod as Record<string, unknown>)['CONFIG_DIR'] = tmpDir;
+  });
+
+  afterEach(async () => {
+    await fs.rm(tmpDir, { recursive: true, force: true });
+    vi.clearAllMocks();
+  });
+
+  function makeEnvelope(overrides: Partial<import('../src/types/ingestion.js').RawSourceEnvelope> = {}): import('../src/types/ingestion.js').RawSourceEnvelope {
+    return {
+      url: 'https://example.com/article',
+      title: 'Test Article',
+      markdown: 'This is the article markdown content.',
+      fetched_at: new Date().toISOString(),
+      query: 'test query',
+      search_rank: 1,
+      content_length: 36,
+      excluded: false,
+      exclude_reason: null,
+      ...overrides,
+    };
+  }
+
+  it('storeSourceEnvelopes creates directory at <rawDir>/<date>/<slug>/', async () => {
+    const { storeSourceEnvelopes } = await import('../src/ingestion/raw-store.js');
+    const envelopes = [makeEnvelope()];
+    const dir = await storeSourceEnvelopes(envelopes, 'test-slug');
+    const stat = await fs.stat(dir);
+    expect(stat.isDirectory()).toBe(true);
+    expect(dir).toContain('test-slug');
+    expect(dir).toContain('raw');
+  });
+
+  it('storeSourceEnvelopes writes source-01.json as valid JSON', async () => {
+    const { storeSourceEnvelopes } = await import('../src/ingestion/raw-store.js');
+    const envelope = makeEnvelope();
+    const dir = await storeSourceEnvelopes([envelope], 'test-slug');
+    const content = await fs.readFile(path.join(dir, 'source-01.json'), 'utf8');
+    const parsed = JSON.parse(content);
+    expect(parsed.url).toBe(envelope.url);
+    expect(parsed.title).toBe(envelope.title);
+    expect(parsed.markdown).toBe(envelope.markdown);
+    expect(parsed.excluded).toBe(false);
+  });
+
+  it('storeSourceEnvelopes writes source-02.json for second envelope', async () => {
+    const { storeSourceEnvelopes } = await import('../src/ingestion/raw-store.js');
+    const e1 = makeEnvelope({ url: 'https://example.com/1', search_rank: 1 });
+    const e2 = makeEnvelope({ url: 'https://example.com/2', search_rank: 2 });
+    const dir = await storeSourceEnvelopes([e1, e2], 'multi-slug');
+    const files = await fs.readdir(dir);
+    expect(files).toContain('source-01.json');
+    expect(files).toContain('source-02.json');
+  });
+
+  it('each JSON file contains all RawSourceEnvelope fields', async () => {
+    const { storeSourceEnvelopes } = await import('../src/ingestion/raw-store.js');
+    const envelope = makeEnvelope({ search_rank: 3 });
+    const dir = await storeSourceEnvelopes([envelope], 'fields-slug');
+    const parsed = JSON.parse(await fs.readFile(path.join(dir, 'source-01.json'), 'utf8'));
+    expect(parsed).toHaveProperty('url');
+    expect(parsed).toHaveProperty('title');
+    expect(parsed).toHaveProperty('markdown');
+    expect(parsed).toHaveProperty('fetched_at');
+    expect(parsed).toHaveProperty('query');
+    expect(parsed).toHaveProperty('search_rank');
+    expect(parsed).toHaveProperty('content_length');
+    expect(parsed).toHaveProperty('excluded');
+    expect(parsed).toHaveProperty('exclude_reason');
+  });
+
+  it('storeSourceEnvelopes writes manifest.json alongside source files', async () => {
+    const { storeSourceEnvelopes } = await import('../src/ingestion/raw-store.js');
+    const dir = await storeSourceEnvelopes([makeEnvelope()], 'manifest-slug');
+    const files = await fs.readdir(dir);
+    expect(files).toContain('manifest.json');
+  });
+
+  it('manifest.json contains query, created_at, and sources array', async () => {
+    const { storeSourceEnvelopes } = await import('../src/ingestion/raw-store.js');
+    const envelope = makeEnvelope({ query: 'how does flash attention work?' });
+    const dir = await storeSourceEnvelopes([envelope], 'manifest-content-slug');
+    const manifest = JSON.parse(await fs.readFile(path.join(dir, 'manifest.json'), 'utf8'));
+    expect(manifest).toHaveProperty('query', 'how does flash attention work?');
+    expect(manifest).toHaveProperty('created_at');
+    expect(Array.isArray(manifest.sources)).toBe(true);
+  });
+
+  it('manifest sources entries have file, url, excluded, exclude_reason', async () => {
+    const { storeSourceEnvelopes } = await import('../src/ingestion/raw-store.js');
+    const dir = await storeSourceEnvelopes([makeEnvelope()], 'entry-fields-slug');
+    const manifest = JSON.parse(await fs.readFile(path.join(dir, 'manifest.json'), 'utf8'));
+    const entry = manifest.sources[0];
+    expect(entry).toHaveProperty('file');
+    expect(entry).toHaveProperty('url');
+    expect(entry).toHaveProperty('excluded');
+    expect(entry).toHaveProperty('exclude_reason');
+  });
+
+  it('excluded sources appear in manifest with excluded: true', async () => {
+    const { storeSourceEnvelopes } = await import('../src/ingestion/raw-store.js');
+    const included = makeEnvelope({ url: 'https://good.com', excluded: false });
+    const excluded = makeEnvelope({
+      url: 'https://paywall.com',
+      excluded: true,
+      exclude_reason: 'paywall_detected: "subscribe to continue reading"',
+    });
+    const dir = await storeSourceEnvelopes([included, excluded], 'excluded-slug');
+    const manifest = JSON.parse(await fs.readFile(path.join(dir, 'manifest.json'), 'utf8'));
+    expect(manifest.sources).toHaveLength(2);
+    const excludedEntry = manifest.sources.find((s: { url: string }) => s.url === 'https://paywall.com');
+    expect(excludedEntry.excluded).toBe(true);
+    expect(excludedEntry.exclude_reason).toMatch(/paywall_detected/);
+  });
+
+  it('storeSourceEnvelopes returns the directory path', async () => {
+    const { storeSourceEnvelopes } = await import('../src/ingestion/raw-store.js');
+    const dir = await storeSourceEnvelopes([makeEnvelope()], 'return-path-slug');
+    expect(typeof dir).toBe('string');
+    expect(dir.length).toBeGreaterThan(0);
+  });
+
+  it('questionToSlug converts question text to lowercase-hyphenated slug', async () => {
+    const { questionToSlug } = await import('../src/ingestion/raw-store.js');
+    const slug = questionToSlug('How does flash attention work?');
+    expect(slug).toMatch(/^[a-z0-9-]+$/);
+    expect(slug).toContain('flash');
+    expect(slug).toContain('attention');
+  });
+
+  it('urlToSlug converts URL to a slug', async () => {
+    const { urlToSlug } = await import('../src/ingestion/raw-store.js');
+    const slug = urlToSlug('https://example.com/article/page');
+    expect(slug).toMatch(/^[a-z0-9-]+$/);
+    expect(slug).toContain('example');
   });
 });
