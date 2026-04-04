@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-ingestion-03-01-PLAN.md
-last_updated: "2026-04-04T14:35:16.232Z"
+stopped_at: Completed 03-ingestion-03-03-PLAN.md
+last_updated: "2026-04-04T14:53:49.109Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 6
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 7
-  completed_plans: 5
+  completed_plans: 7
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 ## Current Position
 
 Phase: 03 (ingestion) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-04
 
@@ -57,6 +57,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01-foundation P03 | 1443 | 2 tasks | 8 files |
 | Phase 02-llm-adapter P01 | 176 | 2 tasks | 6 files |
 | Phase 03-ingestion P01 | 7 | 2 tasks | 9 files |
+| Phase 03-ingestion P03 | 6 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -80,6 +81,8 @@ Recent decisions affecting current work:
 - [Phase 03-ingestion]: ExaSearchProvider uses SEARCH_RESULT_COUNT=5 as code constant per D-10 — not user-configurable
 - [Phase 03-ingestion]: Exa called with type: neural only, no contents option — URL discovery only per D-13
 - [Phase 03-ingestion]: search_provider added as required Config field with 'exa' default — mirrors llm_provider pattern
+- [Phase 03-ingestion]: Commander parseAsync argv[0..1] stripped — call with ['node', 'script', ...args] not ['node', 'script', 'cmdName', ...args] for direct command testing
+- [Phase 03-ingestion]: ask command processes search results sequentially (not Promise.all) for graceful per-source failure isolation without aborting the entire batch
 
 ### Pending Todos
 
@@ -93,6 +96,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T14:35:16.228Z
-Stopped at: Completed 03-ingestion-03-01-PLAN.md
+Last session: 2026-04-04T14:53:49.104Z
+Stopped at: Completed 03-ingestion-03-03-PLAN.md
 Resume file: None

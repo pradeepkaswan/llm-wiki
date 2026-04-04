@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Wiki Store, CLI skeleton, and non-TTY-safe stdout/stderr separation (completed 2026-04-04)
 - [x] **Phase 2: LLM Adapter** - Multi-provider LLM abstraction and config system (completed 2026-04-04)
-- [ ] **Phase 3: Ingestion** - Web search, HTML extraction, raw source storage, URL ingestion
+- [x] **Phase 3: Ingestion** - Web search, HTML extraction, raw source storage, URL ingestion (completed 2026-04-04)
 - [ ] **Phase 4: Synthesis** - LLM article generation, citations, backlinks, dedup, provenance
 - [ ] **Phase 5: Retrieval + Feedback Loop** - BM25 search, orchestrator routing, Q&A filing
 - [ ] **Phase 6: OpenClaw Skill** - Integration wrapper for Telegram/Claude Code access + freshness refresh
@@ -67,8 +67,8 @@ Plans:
 
 Plans:
 - [x] 03-01-PLAN.md — Install deps, ingestion types, config extension (search_provider), SearchProvider interface + Exa implementation
-- [ ] 03-02-PLAN.md — Content extraction pipeline (HTML/PDF), quality filter, raw source envelope storage
-- [ ] 03-03-PLAN.md — Wire ask and ingest commands to full ingestion pipeline
+- [x] 03-02-PLAN.md — Content extraction pipeline (HTML/PDF), quality filter, raw source envelope storage
+- [x] 03-03-PLAN.md — Wire ask and ingest commands to full ingestion pipeline
 
 ### Phase 4: Synthesis
 **Goal**: Raw sources become structured wiki articles in the Obsidian vault — with citations, backlinks to real articles, deduplication, and provenance frontmatter baked in before the feedback loop exists
@@ -115,7 +115,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete    | 2026-04-04 |
 | 2. LLM Adapter | 1/1 | Complete   | 2026-04-04 |
-| 3. Ingestion | 1/3 | In Progress|  |
+| 3. Ingestion | 3/3 | Complete   | 2026-04-04 |
 | 4. Synthesis | 0/TBD | Not started | - |
 | 5. Retrieval + Feedback Loop | 0/TBD | Not started | - |
 | 6. OpenClaw Skill | 0/TBD | Not started | - |
