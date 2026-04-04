@@ -46,8 +46,11 @@ Plans:
   1. User can set `provider: claude | openai | ollama` in `~/.llm-wiki/config.json` and the system uses that provider without code changes
   2. The same prompt sent through the adapter returns a coherent completion from Claude, OpenAI, and Ollama (tested via integration test)
   3. Missing or invalid config produces a clear error message with remediation instructions, not a stack trace
-**Plans**: TBD
+**Plans**: 1 plan
 **UI hint**: no
+
+Plans:
+- [ ] 02-01-PLAN.md — Config extension (LLM fields + validation) and multi-provider adapter (generateText + provider factory)
 
 ### Phase 3: Ingestion
 **Goal**: The system can find web sources for any question and store them as raw JSON envelopes on disk — no LLM involved, fully auditable
@@ -105,8 +108,8 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 2/3 | Complete    | 2026-04-04 |
-| 2. LLM Adapter | 0/TBD | Not started | - |
+| 1. Foundation | 3/3 | Complete    | 2026-04-04 |
+| 2. LLM Adapter | 0/1 | Not started | - |
 | 3. Ingestion | 0/TBD | Not started | - |
 | 4. Synthesis | 0/TBD | Not started | - |
 | 5. Retrieval + Feedback Loop | 0/TBD | Not started | - |
