@@ -12,7 +12,7 @@ Six phases build the compounding knowledge engine layer by layer. Foundation fir
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation** - Wiki Store, CLI skeleton, and non-TTY-safe stdout/stderr separation
+- [x] **Phase 1: Foundation** - Wiki Store, CLI skeleton, and non-TTY-safe stdout/stderr separation (completed 2026-04-04)
 - [ ] **Phase 2: LLM Adapter** - Multi-provider LLM abstraction and config system
 - [ ] **Phase 3: Ingestion** - Web search, HTML extraction, raw source storage, URL ingestion
 - [ ] **Phase 4: Synthesis** - LLM article generation, citations, backlinks, dedup, provenance
@@ -105,7 +105,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 2/3 | In Progress|  |
+| 1. Foundation | 2/3 | Complete    | 2026-04-04 |
 | 2. LLM Adapter | 0/TBD | Not started | - |
 | 3. Ingestion | 0/TBD | Not started | - |
 | 4. Synthesis | 0/TBD | Not started | - |
