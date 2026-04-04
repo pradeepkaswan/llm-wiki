@@ -109,8 +109,8 @@ describe('WikiStore', () => {
     });
 
     it('returns articles and excludes index.md', async () => {
-      await store.saveArticle(makeArticle({ slug: 'article-one', frontmatter: { title: 'Article One', summary: 'First' } as Frontmatter }));
-      await store.saveArticle(makeArticle({ slug: 'article-two', frontmatter: { title: 'Article Two', summary: 'Second' } as Frontmatter }));
+      await store.saveArticle(makeArticle({ slug: 'article-one', frontmatter: { title: 'Article One', summary: 'First', tags: ['test'], categories: ['Test'], sources: [], sourced_at: null, type: 'web', created_at: '2026-04-04T00:00:00.000Z', updated_at: '2026-04-04T00:00:00.000Z' } }));
+      await store.saveArticle(makeArticle({ slug: 'article-two', frontmatter: { title: 'Article Two', summary: 'Second', tags: ['test'], categories: ['Test'], sources: [], sourced_at: null, type: 'web', created_at: '2026-04-04T00:00:00.000Z', updated_at: '2026-04-04T00:00:00.000Z' } }));
       const list = await store.listArticles();
       expect(list).toHaveLength(2);
       expect(list.every((a) => a.slug !== 'index')).toBe(true);
