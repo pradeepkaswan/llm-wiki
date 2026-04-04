@@ -132,8 +132,12 @@ Plans:
   2. The schema co-evolves: running `wiki ask` for a topic not covered by existing categories prompts the LLM to propose a schema update
   3. A `log.md` file in the vault appends a timestamped entry for every wiki mutation (article create, update, index rebuild, lint run)
   4. `log.md` entries follow a parseable format: `## [YYYY-MM-DD HH:MM] operation | description`
-**Plans**: TBD
+**Plans**: 2 plans
 **UI hint**: no
+
+Plans:
+- [ ] 07-01-PLAN.md — WikiStore extension (readSchema, updateSchema, appendLog) and schema template module
+- [ ] 07-02-PLAN.md — Prompt-builder schema injection, synthesizer wiring, schema bootstrap, co-evolution
 
 ### Phase 8: Multi-Page Ingest + Broad Filing + Graph
 **Goal**: A single source ripples knowledge across the entire wiki — not just one article. Any valuable LLM output (comparisons, analyses, connections) can be filed back. Backlinks are bidirectional for Obsidian graph view.
@@ -172,6 +176,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 4. Synthesis | 3/3 | Complete   | 2026-04-04 |
 | 5. Retrieval + Feedback Loop | 3/3 | Complete   | 2026-04-04 |
 | 6. OpenClaw Skill | 2/2 | Complete   | 2026-04-05 |
-| 7. Schema + Activity Log | 0/TBD | Not started | - |
+| 7. Schema + Activity Log | 0/2 | Not started | - |
 | 8. Multi-Page Ingest + Broad Filing + Graph | 0/TBD | Not started | - |
 | 9. Lint + Heal | 0/TBD | Not started | - |
