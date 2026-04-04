@@ -117,8 +117,8 @@ Plans:
 **UI hint**: no
 
 Plans:
-- [ ] 06-01-PLAN.md — Config extension (freshness_days), --refresh flag, non-TTY guard, tests
-- [ ] 06-02-PLAN.md — OpenClaw SKILL.md creation, npm packaging (prepare, files), human verification
+- [x] 06-01-PLAN.md — Config extension (freshness_days), --refresh flag, non-TTY guard, tests
+- [x] 06-02-PLAN.md — OpenClaw SKILL.md creation, npm packaging (prepare, files), human verification
 
 ## Progress
 
