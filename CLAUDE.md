@@ -55,7 +55,7 @@ A personal knowledge engine that turns questions into a growing wiki. You ask a 
 ### Dev Tooling
 | Package | Version | Rationale | Confidence |
 |---------|---------|-----------|------------|
-| `typescript` | 5.x | Type safety | HIGH |
+| `typescript` | 6.x | Type safety | HIGH |
 | `tsx` | Latest | Fast TypeScript execution for dev | HIGH |
 | `vitest` | Latest | Fast test runner | HIGH |
 ## Explicitly Rejected
