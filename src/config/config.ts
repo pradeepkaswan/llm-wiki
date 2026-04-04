@@ -15,6 +15,7 @@ export interface Config {
   llm_base_url?: string;
   search_provider: SearchProvider;
   coverage_threshold: number;  // BM25 score threshold for wiki routing
+  freshness_days?: number;     // Days before an article is considered stale (default 30)
 }
 
 export const CONFIG_DIR = path.join(os.homedir(), '.llm-wiki');
@@ -26,6 +27,7 @@ export const DEFAULTS: Config = {
   llm_base_url: 'http://localhost:11434',
   search_provider: 'exa',
   coverage_threshold: 5.0,
+  freshness_days: 30,
 };
 
 export function validateConfig(config: Config): void {
@@ -46,6 +48,10 @@ export function validateConfig(config: Config): void {
       'coverage_threshold must be a non-negative number in ~/.llm-wiki/config.json.'
     );
   }
+  if (config.freshness_days !== undefined &&
+      (typeof config.freshness_days !== 'number' || config.freshness_days <= 0)) {
+    throw new Error('freshness_days must be a positive number in ~/.llm-wiki/config.json.');
+  }
 }
 
 export async function loadConfig(): Promise<Config> {
@@ -64,6 +70,9 @@ export async function loadConfig(): Promise<Config> {
       throw err;
     }
     if (err instanceof Error && err.message.includes('coverage_threshold')) {
+      throw err;
+    }
+    if (err instanceof Error && err.message.includes('freshness_days')) {
       throw err;
     }
     // First run: create config directory and write defaults

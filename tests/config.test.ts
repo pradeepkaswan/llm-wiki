@@ -175,3 +175,80 @@ describe('config search_provider', () => {
     expect(errorMessage).toMatch(/exa/);
   });
 });
+
+describe('config freshness_days', () => {
+  it('DEFAULTS.freshness_days equals 30', async () => {
+    const { DEFAULTS } = await import('../src/config/config.js');
+    expect(DEFAULTS.freshness_days).toBe(30);
+  });
+
+  it('validateConfig does not throw when freshness_days is undefined', async () => {
+    const { validateConfig } = await import('../src/config/config.js');
+    expect(() =>
+      validateConfig({
+        vault_path: '/some/path',
+        llm_provider: 'claude',
+        llm_base_url: 'http://localhost:11434',
+        search_provider: 'exa',
+        coverage_threshold: 5.0,
+        // freshness_days intentionally omitted — optional field
+      })
+    ).not.toThrow();
+  });
+
+  it('validateConfig does not throw when freshness_days is 30', async () => {
+    const { validateConfig } = await import('../src/config/config.js');
+    expect(() =>
+      validateConfig({
+        vault_path: '/some/path',
+        llm_provider: 'claude',
+        llm_base_url: 'http://localhost:11434',
+        search_provider: 'exa',
+        coverage_threshold: 5.0,
+        freshness_days: 30,
+      })
+    ).not.toThrow();
+  });
+
+  it('validateConfig throws containing "freshness_days must be a positive number" when freshness_days is 0', async () => {
+    const { validateConfig } = await import('../src/config/config.js');
+    expect(() =>
+      validateConfig({
+        vault_path: '/some/path',
+        llm_provider: 'claude',
+        llm_base_url: 'http://localhost:11434',
+        search_provider: 'exa',
+        coverage_threshold: 5.0,
+        freshness_days: 0,
+      })
+    ).toThrow(/freshness_days must be a positive number/);
+  });
+
+  it('validateConfig throws containing "freshness_days must be a positive number" when freshness_days is -5', async () => {
+    const { validateConfig } = await import('../src/config/config.js');
+    expect(() =>
+      validateConfig({
+        vault_path: '/some/path',
+        llm_provider: 'claude',
+        llm_base_url: 'http://localhost:11434',
+        search_provider: 'exa',
+        coverage_threshold: 5.0,
+        freshness_days: -5,
+      })
+    ).toThrow(/freshness_days must be a positive number/);
+  });
+
+  it('validateConfig throws containing "freshness_days must be a positive number" when freshness_days is string "thirty"', async () => {
+    const { validateConfig } = await import('../src/config/config.js');
+    expect(() =>
+      validateConfig({
+        vault_path: '/some/path',
+        llm_provider: 'claude',
+        llm_base_url: 'http://localhost:11434',
+        search_provider: 'exa',
+        coverage_threshold: 5.0,
+        freshness_days: 'thirty' as unknown as number,
+      })
+    ).toThrow(/freshness_days must be a positive number/);
+  });
+});
