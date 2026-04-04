@@ -1,3 +1,4 @@
+import * as readline from 'readline';
 import { Command } from 'commander';
 import { loadConfig } from '../config/config.js';
 import { createSearchProvider } from '../search/search-provider.js';
@@ -8,15 +9,65 @@ import { checkQuality } from '../ingestion/quality.js';
 import { storeSourceEnvelopes, questionToSlug } from '../ingestion/raw-store.js';
 import { synthesize } from '../synthesis/synthesizer.js';
 import { WikiStore } from '../store/wiki-store.js';
+import { assessCoverage } from '../retrieval/orchestrator.js';
+import { generateWikiAnswer } from '../retrieval/wiki-answer.js';
+import { fileAnswerAsArticle } from '../retrieval/article-filer.js';
 import type { RawSourceEnvelope } from '../types/ingestion.js';
 
+async function confirmFiling(): Promise<boolean> {
+  return new Promise((resolve) => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stderr, // CRITICAL: stderr not stdout (D-06, INTG-02)
+    });
+    rl.question('File this answer back into the wiki? [y/N] ', (answer) => {
+      rl.close();
+      resolve(answer.trim().toLowerCase().startsWith('y'));
+    });
+  });
+}
+
 export const askCommand = new Command('ask')
-  .description('Ask a question — searches the web, fetches sources, and stores raw envelopes for synthesis')
+  .description('Ask a question — checks wiki first, then searches the web if needed')
   .argument('<question>', 'the question to ask')
-  .action(async (question: string) => {
+  .option('--web', 'skip wiki check and search the web directly')
+  .action(async (question: string, options: { web?: boolean }) => {
     try {
-      // Load config and create search provider
+      // Load config
       const config = await loadConfig();
+      const store = new WikiStore(config.vault_path);
+
+      // Step 1: Wiki check (skip if --web) — per D-15
+      if (!options.web) {
+        process.stderr.write(`Checking wiki for: "${question}"...\n`);
+        const coverage = await assessCoverage(question, store, config.coverage_threshold);
+
+        if (coverage.covered) {
+          process.stderr.write(
+            `[WIKI] Found ${coverage.articles.length} relevant article(s) — answering from wiki\n`
+          );
+
+          // Generate wiki answer (per D-05)
+          const answer = await generateWikiAnswer(question, coverage.articles);
+          process.stdout.write(`${answer}\n`); // D-06: answer to stdout
+
+          // Step 2: Prompt for filing (per D-11, D-12)
+          const shouldFile = await confirmFiling();
+          if (shouldFile) {
+            process.stderr.write('Filing answer as compound article...\n');
+            const filed = await fileAnswerAsArticle(question, answer, coverage.articles, store);
+            process.stdout.write(`${filed.frontmatter.title}\n`); // article title to stdout
+            process.stderr.write(`[SAVED] articles/${filed.slug}.md (type: compound)\n`);
+          }
+          return; // Exit — do NOT fall through to web search
+        }
+
+        process.stderr.write(
+          `[WEB] Wiki coverage insufficient (threshold: ${config.coverage_threshold}) — searching web\n`
+        );
+      }
+
+      // Step 3: Existing web search -> fetch -> synthesize flow
       const provider = createSearchProvider(config);
 
       // Search for sources
@@ -129,17 +180,16 @@ export const askCommand = new Command('ask')
 
       // Phase 4: Synthesize articles from raw sources
       process.stderr.write('Synthesizing wiki article(s)...\n');
-      const store = new WikiStore(config.vault_path);
-      const result = await synthesize(dir, store);
+      const synthesisResult = await synthesize(dir, store);
 
       // Per D-17: write article title(s) to stdout (machine-readable for Phase 6)
-      for (const article of result.articles) {
+      for (const article of synthesisResult.articles) {
         process.stdout.write(`${article.frontmatter.title}\n`);
       }
 
       // Summary to stderr
-      const newCount = result.articles.length - result.updatedSlugs.length;
-      const updateCount = result.updatedSlugs.length;
+      const newCount = synthesisResult.articles.length - synthesisResult.updatedSlugs.length;
+      const updateCount = synthesisResult.updatedSlugs.length;
       process.stderr.write(
         `Done: ${newCount} new article(s), ${updateCount} updated article(s)\n`
       );
