@@ -1020,3 +1020,290 @@ describe('ask command — Phase 5 retrieval routing', () => {
     expect(stderrMessages.some((m) => m.includes('[WEB]'))).toBe(true);
   });
 });
+
+// --- Unit tests for non-TTY guard (D-09) ---
+
+describe('confirmFiling — non-TTY guard (D-09)', () => {
+  beforeEach(() => {
+    vi.resetModules();
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    // Restore isTTY to true after each test
+    Object.defineProperty(process.stdin, 'isTTY', { value: true, configurable: true });
+  });
+
+  it('returns false when process.stdin.isTTY is undefined (non-interactive subprocess)', async () => {
+    Object.defineProperty(process.stdin, 'isTTY', { value: undefined, configurable: true });
+
+    // Import confirmFiling directly (it must be exported for direct testing)
+    const { confirmFiling } = await import('../src/commands/ask.js');
+    const result = await confirmFiling();
+    expect(result).toBe(false);
+  });
+});
+
+// --- Unit tests for --refresh flag (INTG-03) ---
+
+function makeRefreshArticle(slug: string, title: string, sourcedAt: string | null) {
+  return {
+    slug,
+    frontmatter: {
+      title,
+      tags: [],
+      categories: ['General'],
+      sources: ['https://example.com'],
+      sourced_at: sourcedAt,
+      type: 'web' as const,
+      created_at: '2026-01-01T00:00:00.000Z',
+      updated_at: '2026-01-01T00:00:00.000Z',
+      summary: `Summary of ${title}`,
+    },
+    body: 'Article body text',
+  };
+}
+
+function setupWebPipelineMocks() {
+  vi.doMock('../src/search/search-provider.js', () => ({
+    createSearchProvider: vi.fn().mockReturnValue({
+      search: vi.fn().mockResolvedValue([
+        { url: 'https://example.com/article', title: 'Test Article', rank: 1 },
+      ]),
+    }),
+  }));
+
+  vi.doMock('../src/ingestion/fetcher.js', () => ({
+    fetchUrl: vi.fn().mockResolvedValue({
+      body: new TextEncoder().encode('<html><body><article>Test content</article></body></html>').buffer,
+      contentType: 'text/html',
+    }),
+    isPdf: vi.fn().mockReturnValue(false),
+    normalizeArxivUrl: vi.fn().mockImplementation((url: string) => url),
+  }));
+
+  vi.doMock('../src/ingestion/extractor.js', () => ({
+    extractFromHtml: vi.fn().mockReturnValue({
+      title: 'Test Article',
+      markdown: 'Test content about topic. '.repeat(50),
+    }),
+  }));
+
+  vi.doMock('../src/ingestion/pdf-extractor.js', () => ({
+    extractFromPdf: vi.fn().mockResolvedValue(''),
+  }));
+
+  vi.doMock('../src/ingestion/quality.js', () => ({
+    checkQuality: vi.fn().mockReturnValue({ excluded: false, reason: null }),
+  }));
+
+  vi.doMock('../src/ingestion/raw-store.js', () => ({
+    storeSourceEnvelopes: vi.fn().mockResolvedValue('/tmp/dir'),
+    questionToSlug: vi.fn().mockReturnValue('test'),
+  }));
+
+  vi.doMock('../src/synthesis/synthesizer.js', () => ({
+    synthesize: vi.fn().mockResolvedValue({ articles: [], updatedSlugs: [] }),
+  }));
+}
+
+describe('ask command — --refresh flag (INTG-03)', () => {
+  beforeEach(() => {
+    vi.resetModules();
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('--refresh with stale article (sourced_at 60 days ago) triggers web search path', async () => {
+    const staleDate = new Date(Date.now() - 60 * 86400000).toISOString();
+    const staleArticle = makeRefreshArticle('stale-topic', 'Stale Topic', staleDate);
+
+    vi.doMock('../src/config/config.js', () => ({
+      loadConfig: vi.fn().mockResolvedValue({
+        vault_path: '/tmp/test-vault',
+        llm_provider: 'claude',
+        search_provider: 'exa',
+        coverage_threshold: 5.0,
+        freshness_days: 30,
+      }),
+    }));
+
+    vi.doMock('../src/store/wiki-store.js', () => ({
+      WikiStore: class MockWikiStore { constructor() {} },
+    }));
+
+    vi.doMock('../src/retrieval/orchestrator.js', () => ({
+      assessCoverage: vi.fn().mockResolvedValue({ covered: true, articles: [staleArticle] }),
+    }));
+
+    vi.doMock('../src/retrieval/wiki-answer.js', () => ({
+      generateWikiAnswer: vi.fn(),
+    }));
+
+    vi.doMock('../src/retrieval/article-filer.js', () => ({
+      fileAnswerAsArticle: vi.fn(),
+    }));
+
+    setupWebPipelineMocks();
+
+    const { askCommand } = await import('../src/commands/ask.js');
+    const { createSearchProvider } = await import('../src/search/search-provider.js');
+
+    vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    vi.spyOn(process, 'exit').mockImplementation((() => {}) as never);
+
+    await askCommand.parseAsync(['node', 'wiki', 'test question', '--refresh']);
+
+    // Stale article → web search path triggered
+    expect(createSearchProvider).toHaveBeenCalled();
+  });
+
+  it('--refresh with fresh article (sourced_at 5 days ago) answers from wiki without web search', async () => {
+    const freshDate = new Date(Date.now() - 5 * 86400000).toISOString();
+    const freshArticle = makeRefreshArticle('fresh-topic', 'Fresh Topic', freshDate);
+
+    vi.doMock('../src/config/config.js', () => ({
+      loadConfig: vi.fn().mockResolvedValue({
+        vault_path: '/tmp/test-vault',
+        llm_provider: 'claude',
+        search_provider: 'exa',
+        coverage_threshold: 5.0,
+        freshness_days: 30,
+      }),
+    }));
+
+    vi.doMock('../src/store/wiki-store.js', () => ({
+      WikiStore: class MockWikiStore { constructor() {} },
+    }));
+
+    vi.doMock('../src/retrieval/orchestrator.js', () => ({
+      assessCoverage: vi.fn().mockResolvedValue({ covered: true, articles: [freshArticle] }),
+    }));
+
+    const generateWikiAnswerMock = vi.fn().mockResolvedValue('Fresh wiki answer');
+    vi.doMock('../src/retrieval/wiki-answer.js', () => ({
+      generateWikiAnswer: generateWikiAnswerMock,
+    }));
+
+    vi.doMock('../src/retrieval/article-filer.js', () => ({
+      fileAnswerAsArticle: vi.fn(),
+    }));
+
+    const createSearchProviderMock = vi.fn();
+    vi.doMock('../src/search/search-provider.js', () => ({
+      createSearchProvider: createSearchProviderMock,
+    }));
+
+    vi.doMock('readline', () => ({
+      createInterface: vi.fn().mockReturnValue({
+        question: vi.fn().mockImplementation((_prompt: string, cb: (answer: string) => void) => {
+          cb('n');
+        }),
+        close: vi.fn(),
+      }),
+    }));
+
+    const { askCommand } = await import('../src/commands/ask.js');
+
+    vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    vi.spyOn(process, 'exit').mockImplementation((() => {}) as never);
+
+    await askCommand.parseAsync(['node', 'wiki', 'test question', '--refresh']);
+
+    // Fresh article → wiki answer used, no web search
+    expect(generateWikiAnswerMock).toHaveBeenCalled();
+    expect(createSearchProviderMock).not.toHaveBeenCalled();
+  });
+
+  it('--refresh with no matching article falls through to normal web search (D-07)', async () => {
+    vi.doMock('../src/config/config.js', () => ({
+      loadConfig: vi.fn().mockResolvedValue({
+        vault_path: '/tmp/test-vault',
+        llm_provider: 'claude',
+        search_provider: 'exa',
+        coverage_threshold: 5.0,
+        freshness_days: 30,
+      }),
+    }));
+
+    vi.doMock('../src/store/wiki-store.js', () => ({
+      WikiStore: class MockWikiStore { constructor() {} },
+    }));
+
+    vi.doMock('../src/retrieval/orchestrator.js', () => ({
+      assessCoverage: vi.fn().mockResolvedValue({ covered: false, articles: [] }),
+    }));
+
+    vi.doMock('../src/retrieval/wiki-answer.js', () => ({
+      generateWikiAnswer: vi.fn(),
+    }));
+
+    vi.doMock('../src/retrieval/article-filer.js', () => ({
+      fileAnswerAsArticle: vi.fn(),
+    }));
+
+    setupWebPipelineMocks();
+
+    const { askCommand } = await import('../src/commands/ask.js');
+    const { createSearchProvider } = await import('../src/search/search-provider.js');
+
+    vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    vi.spyOn(process, 'exit').mockImplementation((() => {}) as never);
+
+    await askCommand.parseAsync(['node', 'wiki', 'test question', '--refresh']);
+
+    // No matching article → fell through to web search
+    expect(createSearchProvider).toHaveBeenCalled();
+  });
+
+  it('--refresh with sourced_at=null treats article as stale (always re-fetches)', async () => {
+    const nullSourcedArticle = makeRefreshArticle('null-sourced', 'Null Sourced Topic', null);
+
+    vi.doMock('../src/config/config.js', () => ({
+      loadConfig: vi.fn().mockResolvedValue({
+        vault_path: '/tmp/test-vault',
+        llm_provider: 'claude',
+        search_provider: 'exa',
+        coverage_threshold: 5.0,
+        freshness_days: 30,
+      }),
+    }));
+
+    vi.doMock('../src/store/wiki-store.js', () => ({
+      WikiStore: class MockWikiStore { constructor() {} },
+    }));
+
+    vi.doMock('../src/retrieval/orchestrator.js', () => ({
+      assessCoverage: vi.fn().mockResolvedValue({ covered: true, articles: [nullSourcedArticle] }),
+    }));
+
+    vi.doMock('../src/retrieval/wiki-answer.js', () => ({
+      generateWikiAnswer: vi.fn(),
+    }));
+
+    vi.doMock('../src/retrieval/article-filer.js', () => ({
+      fileAnswerAsArticle: vi.fn(),
+    }));
+
+    setupWebPipelineMocks();
+
+    const { askCommand } = await import('../src/commands/ask.js');
+    const { createSearchProvider } = await import('../src/search/search-provider.js');
+
+    vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    vi.spyOn(process, 'exit').mockImplementation((() => {}) as never);
+
+    await askCommand.parseAsync(['node', 'wiki', 'test question', '--refresh']);
+
+    // sourced_at=null → always stale → web search triggered
+    expect(createSearchProvider).toHaveBeenCalled();
+  });
+});

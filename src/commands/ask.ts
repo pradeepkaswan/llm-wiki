@@ -13,8 +13,13 @@ import { assessCoverage } from '../retrieval/orchestrator.js';
 import { generateWikiAnswer } from '../retrieval/wiki-answer.js';
 import { fileAnswerAsArticle } from '../retrieval/article-filer.js';
 import type { RawSourceEnvelope } from '../types/ingestion.js';
+import type { Article } from '../types/article.js';
 
-async function confirmFiling(): Promise<boolean> {
+export async function confirmFiling(): Promise<boolean> {
+  // D-09: Non-TTY guard — auto-decline in subprocess context (prevents readline hang)
+  if (!process.stdin.isTTY) {
+    return false;
+  }
   return new Promise((resolve) => {
     const rl = readline.createInterface({
       input: process.stdin,
@@ -27,15 +32,50 @@ async function confirmFiling(): Promise<boolean> {
   });
 }
 
+export function isArticleStale(article: Article, freshnessDays: number): boolean {
+  const { sourced_at } = article.frontmatter;
+  if (sourced_at === null) return true; // null = always stale (per Research A5)
+  const stalenessMs = freshnessDays * 86400000; // days to milliseconds
+  return Date.now() - new Date(sourced_at).getTime() > stalenessMs;
+}
+
 export const askCommand = new Command('ask')
   .description('Ask a question — checks wiki first, then searches the web if needed')
   .argument('<question>', 'the question to ask')
   .option('--web', 'skip wiki check and search the web directly')
-  .action(async (question: string, options: { web?: boolean }) => {
+  .option('--refresh', 're-fetch sources for stale articles (older than freshness_days)')
+  .action(async (question: string, options: { web?: boolean; refresh?: boolean }) => {
     try {
       // Load config
       const config = await loadConfig();
       const store = new WikiStore(config.vault_path);
+
+      // --refresh: check if existing article is stale (per D-05, D-08)
+      if (options.refresh && !options.web) {
+        process.stderr.write(`Checking article freshness for: "${question}"...\n`);
+        const coverage = await assessCoverage(question, store, config.coverage_threshold);
+
+        if (coverage.covered && coverage.articles.length > 0) {
+          const topArticle = coverage.articles[0];
+          const freshnessDays = config.freshness_days ?? 30;
+          if (isArticleStale(topArticle, freshnessDays)) {
+            process.stderr.write(
+              `[REFRESH] Article "${topArticle.frontmatter.title}" is stale — re-fetching from web\n`
+            );
+            // Force web path by setting options.web = true
+            options.web = true;
+          } else {
+            process.stderr.write(
+              `[REFRESH] Article "${topArticle.frontmatter.title}" is fresh — answering from wiki\n`
+            );
+            // Fall through to normal wiki-first flow (options.web stays false)
+          }
+        } else {
+          // No matching article found — degrade to normal web search (D-07)
+          process.stderr.write(`[REFRESH] No matching article found — searching web\n`);
+          options.web = true;
+        }
+      }
 
       // Step 1: Wiki check (skip if --web) — per D-15
       if (!options.web) {
