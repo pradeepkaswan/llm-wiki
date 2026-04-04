@@ -148,8 +148,13 @@ Plans:
   2. Running `wiki file "Flash attention is faster than standard attention because..."` files the content into the appropriate existing article(s) or creates new ones — the LLM decides placement
   3. After any article write, every `[[wikilink]]` target has a reciprocal backlink to the source article — Obsidian graph view shows full bidirectional connectivity
   4. `log.md` records all ripple updates (not just the primary article)
-**Plans**: TBD
+**Plans**: 3 plans
 **UI hint**: no
+
+Plans:
+- [ ] 08-01-PLAN.md — Ripple module, backlink enforcer, See Also utility, Frontmatter type extension
+- [ ] 08-02-PLAN.md — Ask command integration: wire ripple + backlink enforcement after synthesis
+- [ ] 08-03-PLAN.md — Wiki file command: broad filing with LLM placement, ripple, backlinks
 
 ### Phase 9: Lint + Heal
 **Goal**: The wiki maintains its own health — finding contradictions, orphan pages, stale claims, and missing concepts, then auto-fixing what it can
@@ -177,5 +182,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 5. Retrieval + Feedback Loop | 3/3 | Complete   | 2026-04-04 |
 | 6. OpenClaw Skill | 2/2 | Complete   | 2026-04-05 |
 | 7. Schema + Activity Log | 0/2 | Not started | - |
-| 8. Multi-Page Ingest + Broad Filing + Graph | 0/TBD | Not started | - |
+| 8. Multi-Page Ingest + Broad Filing + Graph | 0/3 | Not started | - |
 | 9. Lint + Heal | 0/TBD | Not started | - |
