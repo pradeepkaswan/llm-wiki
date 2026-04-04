@@ -17,11 +17,11 @@ Every question you ask makes the wiki smarter — the knowledge compounds automa
 - [x] LLM synthesizes sources into structured .md wiki articles — Validated in Phase 4: Synthesis
 - [x] Articles include summaries, backlinks, and concept categories — Validated in Phase 4: Synthesis
 - [x] Broad topic questions build connected knowledge clusters (multiple linked articles) — Validated in Phase 4: Synthesis
+- [x] Q&A against existing wiki content (no re-searching if wiki knows it) — Validated in Phase 5: Retrieval + Feedback Loop
+- [x] Answers from Q&A filed back into wiki as knowledge compounds — Validated in Phase 5: Retrieval + Feedback Loop
 
 ### Active
 
-- [ ] Q&A against existing wiki content (no re-searching if wiki knows it)
-- [ ] Answers from Q&A filed back into wiki as knowledge compounds
 - [ ] Claude Code skill for using the wiki from within Claude Code sessions
 - [ ] Wiki articles stored in existing Obsidian vault (Pradeep's Vault)
 - [ ] Auto-maintained index of all wiki articles
@@ -80,4 +80,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-04 after Phase 4 completion*
+*Last updated: 2026-04-04 after Phase 5 completion*
