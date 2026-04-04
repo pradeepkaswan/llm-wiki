@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: LLM Adapter** - Multi-provider LLM abstraction and config system (completed 2026-04-04)
 - [x] **Phase 3: Ingestion** - Web search, HTML extraction, raw source storage, URL ingestion (completed 2026-04-04)
 - [x] **Phase 4: Synthesis** - LLM article generation, citations, backlinks, dedup, provenance (completed 2026-04-04)
-- [ ] **Phase 5: Retrieval + Feedback Loop** - BM25 search, orchestrator routing, Q&A filing
+- [x] **Phase 5: Retrieval + Feedback Loop** - BM25 search, orchestrator routing, Q&A filing (completed 2026-04-04)
 - [ ] **Phase 6: OpenClaw Skill** - Integration wrapper for Telegram/Claude Code access + freshness refresh
 
 ## Phase Details
@@ -103,7 +103,7 @@ Plans:
 Plans:
 - [x] 05-01-PLAN.md — Config extension (coverage_threshold), coverage assessment engine, wiki answer generator
 - [x] 05-02-PLAN.md — Compound article filing pipeline (Q&A-to-article conversion, dedup, wiki:// sources)
-- [ ] 05-03-PLAN.md — CLI wiring: ask command wiki-first flow, --web flag, readline confirmation, tests
+- [x] 05-03-PLAN.md — CLI wiring: ask command wiki-first flow, --web flag, readline confirmation, tests
 
 ### Phase 6: OpenClaw Skill
 **Goal**: The wiki is accessible from any OpenClaw-connected interface (Telegram, Claude Code) with no new logic — the CLI is the implementation, the skill is a thin wrapper
@@ -127,5 +127,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 2. LLM Adapter | 1/1 | Complete   | 2026-04-04 |
 | 3. Ingestion | 3/3 | Complete   | 2026-04-04 |
 | 4. Synthesis | 3/3 | Complete   | 2026-04-04 |
-| 5. Retrieval + Feedback Loop | 2/3 | In Progress|  |
+| 5. Retrieval + Feedback Loop | 3/3 | Complete   | 2026-04-04 |
 | 6. OpenClaw Skill | 0/TBD | Not started | - |
