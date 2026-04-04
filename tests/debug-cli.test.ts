@@ -64,6 +64,9 @@ describe('debug mock', () => {
     vi.doMock('../src/store/wiki-store.js', () => ({
       WikiStore: class MockWikiStore {
         constructor() {}
+        async readSchema() { return null; }
+        async listArticles() { return []; }
+        async updateSchema(_content: string) {}
       },
     }));
 

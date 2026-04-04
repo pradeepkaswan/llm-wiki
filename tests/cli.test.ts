@@ -162,6 +162,9 @@ describe('ask command — ingestion pipeline wiring', () => {
     vi.doMock('../src/store/wiki-store.js', () => ({
       WikiStore: class MockWikiStore {
         constructor() {}
+        async readSchema() { return null; }
+        async listArticles() { return []; }
+        async updateSchema(_content: string) {}
       },
     }));
 
@@ -252,7 +255,12 @@ describe('ask command — ingestion pipeline wiring', () => {
     }));
 
     vi.doMock('../src/store/wiki-store.js', () => ({
-      WikiStore: class MockWikiStore { constructor() {} },
+      WikiStore: class MockWikiStore {
+        constructor() {}
+        async readSchema() { return null; }
+        async listArticles() { return []; }
+        async updateSchema(_content: string) {}
+      },
     }));
 
     const { askCommand } = await import('../src/commands/ask.js');
@@ -333,7 +341,12 @@ describe('ask command — ingestion pipeline wiring', () => {
     }));
 
     vi.doMock('../src/store/wiki-store.js', () => ({
-      WikiStore: class MockWikiStore { constructor() {} },
+      WikiStore: class MockWikiStore {
+        constructor() {}
+        async readSchema() { return null; }
+        async listArticles() { return []; }
+        async updateSchema(_content: string) {}
+      },
     }));
 
     const { askCommand } = await import('../src/commands/ask.js');
@@ -417,7 +430,12 @@ describe('ask command — ingestion pipeline wiring', () => {
     }));
 
     vi.doMock('../src/store/wiki-store.js', () => ({
-      WikiStore: class MockWikiStore { constructor() {} },
+      WikiStore: class MockWikiStore {
+        constructor() {}
+        async readSchema() { return null; }
+        async listArticles() { return []; }
+        async updateSchema(_content: string) {}
+      },
     }));
 
     const { askCommand } = await import('../src/commands/ask.js');
@@ -665,6 +683,9 @@ describe('ask command — Phase 5 retrieval routing', () => {
     vi.doMock('../src/store/wiki-store.js', () => ({
       WikiStore: class MockWikiStore {
         constructor() {}
+        async readSchema() { return null; }
+        async listArticles() { return []; }
+        async updateSchema(_content: string) {}
       },
     }));
 
@@ -727,6 +748,9 @@ describe('ask command — Phase 5 retrieval routing', () => {
     vi.doMock('../src/store/wiki-store.js', () => ({
       WikiStore: class MockWikiStore {
         constructor() {}
+        async readSchema() { return null; }
+        async listArticles() { return []; }
+        async updateSchema(_content: string) {}
       },
     }));
 
@@ -807,6 +831,9 @@ describe('ask command — Phase 5 retrieval routing', () => {
     vi.doMock('../src/store/wiki-store.js', () => ({
       WikiStore: class MockWikiStore {
         constructor() {}
+        async readSchema() { return null; }
+        async listArticles() { return []; }
+        async updateSchema(_content: string) {}
       },
     }));
 
@@ -893,6 +920,9 @@ describe('ask command — Phase 5 retrieval routing', () => {
     vi.doMock('../src/store/wiki-store.js', () => ({
       WikiStore: class MockWikiStore {
         constructor() {}
+        async readSchema() { return null; }
+        async listArticles() { return []; }
+        async updateSchema(_content: string) {}
       },
     }));
 
@@ -949,6 +979,9 @@ describe('ask command — Phase 5 retrieval routing', () => {
     vi.doMock('../src/store/wiki-store.js', () => ({
       WikiStore: class MockWikiStore {
         constructor() {}
+        async readSchema() { return null; }
+        async listArticles() { return []; }
+        async updateSchema(_content: string) {}
       },
     }));
 
@@ -1133,7 +1166,12 @@ describe('ask command — --refresh flag (INTG-03)', () => {
     }));
 
     vi.doMock('../src/store/wiki-store.js', () => ({
-      WikiStore: class MockWikiStore { constructor() {} },
+      WikiStore: class MockWikiStore {
+        constructor() {}
+        async readSchema() { return null; }
+        async listArticles() { return []; }
+        async updateSchema(_content: string) {}
+      },
     }));
 
     vi.doMock('../src/retrieval/orchestrator.js', () => ({
@@ -1178,7 +1216,12 @@ describe('ask command — --refresh flag (INTG-03)', () => {
     }));
 
     vi.doMock('../src/store/wiki-store.js', () => ({
-      WikiStore: class MockWikiStore { constructor() {} },
+      WikiStore: class MockWikiStore {
+        constructor() {}
+        async readSchema() { return null; }
+        async listArticles() { return []; }
+        async updateSchema(_content: string) {}
+      },
     }));
 
     vi.doMock('../src/retrieval/orchestrator.js', () => ({
@@ -1233,7 +1276,12 @@ describe('ask command — --refresh flag (INTG-03)', () => {
     }));
 
     vi.doMock('../src/store/wiki-store.js', () => ({
-      WikiStore: class MockWikiStore { constructor() {} },
+      WikiStore: class MockWikiStore {
+        constructor() {}
+        async readSchema() { return null; }
+        async listArticles() { return []; }
+        async updateSchema(_content: string) {}
+      },
     }));
 
     vi.doMock('../src/retrieval/orchestrator.js', () => ({
@@ -1277,7 +1325,12 @@ describe('ask command — --refresh flag (INTG-03)', () => {
     }));
 
     vi.doMock('../src/store/wiki-store.js', () => ({
-      WikiStore: class MockWikiStore { constructor() {} },
+      WikiStore: class MockWikiStore {
+        constructor() {}
+        async readSchema() { return null; }
+        async listArticles() { return []; }
+        async updateSchema(_content: string) {}
+      },
     }));
 
     vi.doMock('../src/retrieval/orchestrator.js', () => ({

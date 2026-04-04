@@ -12,6 +12,7 @@ import { WikiStore } from '../store/wiki-store.js';
 import { assessCoverage } from '../retrieval/orchestrator.js';
 import { generateWikiAnswer } from '../retrieval/wiki-answer.js';
 import { fileAnswerAsArticle } from '../retrieval/article-filer.js';
+import { buildDefaultSchema } from '../schema/template.js';
 import type { RawSourceEnvelope } from '../types/ingestion.js';
 import type { Article } from '../types/article.js';
 
@@ -49,6 +50,16 @@ export const askCommand = new Command('ask')
       // Load config
       const config = await loadConfig();
       const store = new WikiStore(config.vault_path);
+
+      // Schema bootstrap: create schema.md on first run if missing (per D-08)
+      let schema = await store.readSchema();
+      if (schema === null) {
+        process.stderr.write('Bootstrapping wiki schema...\n');
+        const articles = await store.listArticles();
+        const categories = [...new Set(articles.flatMap((a) => a.frontmatter.categories))].sort();
+        schema = buildDefaultSchema(categories);
+        await store.updateSchema(schema);
+      }
 
       // --refresh: check if existing article is stale (per D-05, D-08)
       if (options.refresh && !options.web) {
@@ -95,7 +106,7 @@ export const askCommand = new Command('ask')
           const shouldFile = await confirmFiling();
           if (shouldFile) {
             process.stderr.write('Filing answer as compound article...\n');
-            const filed = await fileAnswerAsArticle(question, answer, coverage.articles, store);
+            const filed = await fileAnswerAsArticle(question, answer, coverage.articles, store, schema);
             process.stdout.write(`${filed.frontmatter.title}\n`); // article title to stdout
             process.stderr.write(`[SAVED] articles/${filed.slug}.md (type: compound)\n`);
           }
