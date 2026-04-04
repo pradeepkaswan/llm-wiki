@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation** - Wiki Store, CLI skeleton, and non-TTY-safe stdout/stderr separation (completed 2026-04-04)
 - [x] **Phase 2: LLM Adapter** - Multi-provider LLM abstraction and config system (completed 2026-04-04)
 - [x] **Phase 3: Ingestion** - Web search, HTML extraction, raw source storage, URL ingestion (completed 2026-04-04)
-- [ ] **Phase 4: Synthesis** - LLM article generation, citations, backlinks, dedup, provenance
+- [x] **Phase 4: Synthesis** - LLM article generation, citations, backlinks, dedup, provenance (completed 2026-04-04)
 - [ ] **Phase 5: Retrieval + Feedback Loop** - BM25 search, orchestrator routing, Q&A filing
 - [ ] **Phase 6: OpenClaw Skill** - Integration wrapper for Telegram/Claude Code access + freshness refresh
 
@@ -86,7 +86,7 @@ Plans:
 Plans:
 - [x] 04-01-PLAN.md — Extend LLM adapter (GenerateOptions), synthesis types, prompt-builder, output-parser
 - [x] 04-02-PLAN.md — Deduplicator (slug + BM25 + LLM tiebreak), article-builder, wikilink sanitizer
-- [ ] 04-03-PLAN.md — Synthesizer orchestrator and ask command CLI wiring
+- [x] 04-03-PLAN.md — Synthesizer orchestrator and ask command CLI wiring
 
 ### Phase 5: Retrieval + Feedback Loop
 **Goal**: The wiki answers its own questions — the system checks local knowledge before fetching the web, and Q&A answers compound back into the wiki as durable artifacts
@@ -121,6 +121,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 1. Foundation | 3/3 | Complete    | 2026-04-04 |
 | 2. LLM Adapter | 1/1 | Complete   | 2026-04-04 |
 | 3. Ingestion | 3/3 | Complete   | 2026-04-04 |
-| 4. Synthesis | 2/3 | In Progress|  |
+| 4. Synthesis | 3/3 | Complete   | 2026-04-04 |
 | 5. Retrieval + Feedback Loop | 0/TBD | Not started | - |
 | 6. OpenClaw Skill | 0/TBD | Not started | - |
