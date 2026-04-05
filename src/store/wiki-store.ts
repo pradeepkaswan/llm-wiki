@@ -13,6 +13,9 @@ const REQUIRED_FM_FIELDS: (keyof Frontmatter)[] = [
   'title', 'tags', 'categories', 'type', 'created_at', 'updated_at', 'summary',
 ];
 
+export const VALID_TYPES = ['web', 'compound', 'filed'] as const;
+type ValidType = typeof VALID_TYPES[number];
+
 export class WikiStore {
   constructor(private readonly vaultPath: string) {}
 
@@ -34,8 +37,8 @@ export class WikiStore {
         throw new Error(`Missing required frontmatter field: ${field}`);
       }
     }
-    if (fm.type !== 'web' && fm.type !== 'compound') {
-      throw new Error(`Invalid frontmatter type: "${fm.type}". Must be "web" or "compound".`);
+    if (!VALID_TYPES.includes(fm.type as ValidType)) {
+      throw new Error(`Invalid frontmatter type: "${fm.type}". Must be one of: ${VALID_TYPES.join(', ')}.`);
     }
   }
 

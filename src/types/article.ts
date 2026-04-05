@@ -4,7 +4,7 @@ export interface Frontmatter {
   categories: string[];
   sources: string[];          // URLs; empty array until Phase 4
   sourced_at: string | null;  // ISO date string; null until Phase 4
-  type: 'web' | 'compound';   // 'web' = from web search; 'compound' = Q&A filing (Phase 5)
+  type: 'web' | 'compound' | 'filed';   // 'web' = from web search; 'compound' = Q&A filing (Phase 5); 'filed' = broad topic filing (Phase 8)
   created_at: string;         // ISO date string
   updated_at: string;         // ISO date string
   summary: string;            // One-line summary shown in index.md
