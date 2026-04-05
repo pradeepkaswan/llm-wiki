@@ -6,6 +6,7 @@ import { listCommand } from './commands/list.js';
 import { ingestCommand } from './commands/ingest.js';
 import { fileCommand } from './commands/file.js';
 import { lintCommand } from './commands/lint.js';
+import { healCommand } from './commands/heal.js';
 
 const program = new Command();
 
@@ -29,6 +30,7 @@ program.addCommand(listCommand);
 program.addCommand(ingestCommand);
 program.addCommand(fileCommand);
 program.addCommand(lintCommand);
+program.addCommand(healCommand);
 
 program.parseAsync(process.argv).catch((err: Error) => {
   process.stderr.write(`Error: ${err.message}\n`);
