@@ -4,6 +4,7 @@ import { askCommand } from './commands/ask.js';
 import { searchCommand } from './commands/search.js';
 import { listCommand } from './commands/list.js';
 import { ingestCommand } from './commands/ingest.js';
+import { fileCommand } from './commands/file.js';
 
 const program = new Command();
 
@@ -25,6 +26,7 @@ program.addCommand(askCommand);
 program.addCommand(searchCommand);
 program.addCommand(listCommand);
 program.addCommand(ingestCommand);
+program.addCommand(fileCommand);
 
 program.parseAsync(process.argv).catch((err: Error) => {
   process.stderr.write(`Error: ${err.message}\n`);
