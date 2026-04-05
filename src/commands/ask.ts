@@ -13,6 +13,8 @@ import { assessCoverage } from '../retrieval/orchestrator.js';
 import { generateWikiAnswer } from '../retrieval/wiki-answer.js';
 import { fileAnswerAsArticle } from '../retrieval/article-filer.js';
 import { buildDefaultSchema } from '../schema/template.js';
+import { rippleUpdates } from '../synthesis/ripple.js';
+import { enforceBacklinks } from '../synthesis/backlink-enforcer.js';
 import type { RawSourceEnvelope } from '../types/ingestion.js';
 import type { Article } from '../types/article.js';
 
@@ -109,6 +111,19 @@ export const askCommand = new Command('ask')
             const filed = await fileAnswerAsArticle(question, answer, coverage.articles, store, schema);
             process.stdout.write(`${filed.frontmatter.title}\n`); // article title to stdout
             process.stderr.write(`[SAVED] articles/${filed.slug}.md (type: compound)\n`);
+
+            // Backlink enforcement on filed compound article (D-13, GRAPH-02)
+            try {
+              const backlinkUpdates = await enforceBacklinks(filed, store);
+              if (backlinkUpdates.length > 0) {
+                process.stderr.write(
+                  `[BACKLINK] ${filed.slug}: added backlinks to ${backlinkUpdates.length} article(s)\n`
+                );
+              }
+            } catch (err: unknown) {
+              const msg = err instanceof Error ? err.message : String(err);
+              process.stderr.write(`[BACKLINK] Warning: backlink enforcement failed — ${msg}\n`);
+            }
           }
           return; // Exit — do NOT fall through to web search
         }
@@ -238,7 +253,41 @@ export const askCommand = new Command('ask')
         process.stdout.write(`${article.frontmatter.title}\n`);
       }
 
-      // Summary to stderr
+      // Phase 8: Ripple updates — propagate cross-references to related articles (D-01)
+      process.stderr.write('Rippling cross-references to related articles...\n');
+      try {
+        const rippleResult = await rippleUpdates(synthesisResult.articles, store, schema);
+        if (rippleResult.updatedSlugs.length > 0) {
+          process.stderr.write(
+            `[RIPPLE] Updated ${rippleResult.updatedSlugs.length} related article(s)\n`
+          );
+        } else {
+          process.stderr.write('[RIPPLE] No related articles to update\n');
+        }
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        process.stderr.write(`[RIPPLE] Warning: ripple failed — ${msg}\n`);
+        // Do NOT throw — primary articles already saved (graceful degradation)
+      }
+
+      // Phase 8: Backlink enforcement — ensure bidirectional links (D-13)
+      process.stderr.write('Enforcing bidirectional backlinks...\n');
+      for (const article of synthesisResult.articles) {
+        try {
+          const backlinkUpdates = await enforceBacklinks(article, store);
+          if (backlinkUpdates.length > 0) {
+            process.stderr.write(
+              `[BACKLINK] ${article.slug}: added backlinks to ${backlinkUpdates.length} article(s)\n`
+            );
+          }
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err);
+          process.stderr.write(`[BACKLINK] Warning: backlink enforcement failed for ${article.slug} — ${msg}\n`);
+          // Do NOT throw — continue processing remaining articles
+        }
+      }
+
+      // Summary to stderr (existing, now includes ripple info)
       const newCount = synthesisResult.articles.length - synthesisResult.updatedSlugs.length;
       const updateCount = synthesisResult.updatedSlugs.length;
       process.stderr.write(

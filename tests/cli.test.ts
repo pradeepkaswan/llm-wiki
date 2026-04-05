@@ -450,6 +450,240 @@ describe('ask command — ingestion pipeline wiring', () => {
   });
 });
 
+// --- Unit tests for Phase 8 ripple + backlink enforcement wiring ---
+
+// Shared helper: sets up all standard mocks for the web-search path
+function setupAskWebPathMocks(synthesizeResult = MOCK_SYNTHESIS_RESULT) {
+  vi.doMock('../src/config/config.js', () => ({
+    loadConfig: vi.fn().mockResolvedValue({
+      vault_path: '/tmp/test-vault',
+      llm_provider: 'claude',
+      search_provider: 'exa',
+      coverage_threshold: 5.0,
+    }),
+  }));
+
+  vi.doMock('../src/retrieval/orchestrator.js', () => ({
+    assessCoverage: vi.fn().mockResolvedValue({ covered: false, articles: [] }),
+  }));
+
+  vi.doMock('../src/retrieval/wiki-answer.js', () => ({
+    generateWikiAnswer: vi.fn(),
+  }));
+
+  vi.doMock('../src/retrieval/article-filer.js', () => ({
+    fileAnswerAsArticle: vi.fn(),
+  }));
+
+  vi.doMock('../src/search/search-provider.js', () => ({
+    createSearchProvider: vi.fn().mockReturnValue({
+      search: vi.fn().mockResolvedValue([
+        { url: 'https://example.com/article', title: 'Test Article', rank: 1 },
+      ]),
+    }),
+  }));
+
+  vi.doMock('../src/ingestion/fetcher.js', () => ({
+    fetchUrl: vi.fn().mockResolvedValue({
+      body: new TextEncoder().encode('<html><body><article>Test content about AI</article></body></html>').buffer,
+      contentType: 'text/html',
+    }),
+    isPdf: vi.fn().mockReturnValue(false),
+    normalizeArxivUrl: vi.fn().mockImplementation((url: string) => url),
+  }));
+
+  vi.doMock('../src/ingestion/extractor.js', () => ({
+    extractFromHtml: vi.fn().mockReturnValue({
+      title: 'Test Article',
+      markdown: 'Test content about AI. '.repeat(50),
+    }),
+  }));
+
+  vi.doMock('../src/ingestion/pdf-extractor.js', () => ({
+    extractFromPdf: vi.fn().mockResolvedValue('PDF content'),
+  }));
+
+  vi.doMock('../src/ingestion/quality.js', () => ({
+    checkQuality: vi.fn().mockReturnValue({ excluded: false, reason: null }),
+  }));
+
+  vi.doMock('../src/ingestion/raw-store.js', () => ({
+    storeSourceEnvelopes: vi.fn().mockResolvedValue('/tmp/.llm-wiki/raw/2026-04-04/test-question'),
+    questionToSlug: vi.fn().mockReturnValue('test-question'),
+  }));
+
+  vi.doMock('../src/synthesis/synthesizer.js', () => ({
+    synthesize: vi.fn().mockResolvedValue(synthesizeResult),
+  }));
+
+  vi.doMock('../src/store/wiki-store.js', () => ({
+    WikiStore: class MockWikiStore {
+      constructor() {}
+      async readSchema() { return null; }
+      async listArticles() { return []; }
+      async updateSchema(_content: string) {}
+    },
+  }));
+}
+
+describe('ask command — Phase 8 ripple + backlink enforcement wiring', () => {
+  beforeEach(() => {
+    vi.resetModules();
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('calls rippleUpdates after synthesize returns (web-search path)', async () => {
+    setupAskWebPathMocks();
+
+    const rippleUpdatesMock = vi.fn().mockResolvedValue({ updatedSlugs: [], skippedSlugs: [] });
+    vi.doMock('../src/synthesis/ripple.js', () => ({
+      rippleUpdates: rippleUpdatesMock,
+    }));
+
+    vi.doMock('../src/synthesis/backlink-enforcer.js', () => ({
+      enforceBacklinks: vi.fn().mockResolvedValue([]),
+    }));
+
+    const { askCommand } = await import('../src/commands/ask.js');
+
+    vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    vi.spyOn(process, 'exit').mockImplementation((() => {}) as never);
+
+    await askCommand.parseAsync(['node', 'wiki', 'test question']);
+
+    expect(rippleUpdatesMock).toHaveBeenCalledOnce();
+    // Called with primary articles from synthesis result, store instance, and schema string
+    expect(rippleUpdatesMock).toHaveBeenCalledWith(
+      MOCK_SYNTHESIS_RESULT.articles,
+      expect.any(Object),
+      expect.any(String)
+    );
+  });
+
+  it('calls enforceBacklinks for each article after ripple completes (web-search path)', async () => {
+    setupAskWebPathMocks();
+
+    vi.doMock('../src/synthesis/ripple.js', () => ({
+      rippleUpdates: vi.fn().mockResolvedValue({ updatedSlugs: ['related-article'], skippedSlugs: [] }),
+    }));
+
+    const enforceBacklinksMock = vi.fn().mockResolvedValue([]);
+    vi.doMock('../src/synthesis/backlink-enforcer.js', () => ({
+      enforceBacklinks: enforceBacklinksMock,
+    }));
+
+    const { askCommand } = await import('../src/commands/ask.js');
+
+    vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    vi.spyOn(process, 'exit').mockImplementation((() => {}) as never);
+
+    await askCommand.parseAsync(['node', 'wiki', 'test question']);
+
+    // enforceBacklinks called once per article in synthesis result
+    expect(enforceBacklinksMock).toHaveBeenCalledTimes(MOCK_SYNTHESIS_RESULT.articles.length);
+    expect(enforceBacklinksMock).toHaveBeenCalledWith(
+      MOCK_SYNTHESIS_RESULT.articles[0],
+      expect.any(Object)
+    );
+  });
+
+  it('ripple failure does not abort the ask command (graceful degradation)', async () => {
+    setupAskWebPathMocks();
+
+    vi.doMock('../src/synthesis/ripple.js', () => ({
+      rippleUpdates: vi.fn().mockRejectedValue(new Error('LLM timeout')),
+    }));
+
+    vi.doMock('../src/synthesis/backlink-enforcer.js', () => ({
+      enforceBacklinks: vi.fn().mockResolvedValue([]),
+    }));
+
+    const { askCommand } = await import('../src/commands/ask.js');
+
+    const stderrMessages: string[] = [];
+    vi.spyOn(process.stderr, 'write').mockImplementation((msg: unknown) => {
+      stderrMessages.push(String(msg));
+      return true;
+    });
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {}) as never);
+
+    await askCommand.parseAsync(['node', 'wiki', 'test question']);
+
+    // process.exit(1) was NOT called — primary articles already saved
+    expect(exitSpy).not.toHaveBeenCalled();
+    // Warning message was written to stderr
+    expect(stderrMessages.some((m) => m.includes('[RIPPLE] Warning:') && m.includes('LLM timeout'))).toBe(true);
+    // Done summary still written
+    expect(stderrMessages.some((m) => m.includes('Done:'))).toBe(true);
+  });
+
+  it('backlink enforcement failure does not abort the ask command', async () => {
+    setupAskWebPathMocks();
+
+    vi.doMock('../src/synthesis/ripple.js', () => ({
+      rippleUpdates: vi.fn().mockResolvedValue({ updatedSlugs: [], skippedSlugs: [] }),
+    }));
+
+    vi.doMock('../src/synthesis/backlink-enforcer.js', () => ({
+      enforceBacklinks: vi.fn().mockRejectedValue(new Error('Store unavailable')),
+    }));
+
+    const { askCommand } = await import('../src/commands/ask.js');
+
+    const stderrMessages: string[] = [];
+    vi.spyOn(process.stderr, 'write').mockImplementation((msg: unknown) => {
+      stderrMessages.push(String(msg));
+      return true;
+    });
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {}) as never);
+
+    await askCommand.parseAsync(['node', 'wiki', 'test question']);
+
+    // process.exit(1) was NOT called
+    expect(exitSpy).not.toHaveBeenCalled();
+    // Warning message was written to stderr
+    expect(stderrMessages.some((m) => m.includes('[BACKLINK] Warning:') && m.includes('Store unavailable'))).toBe(true);
+    // Done summary still written
+    expect(stderrMessages.some((m) => m.includes('Done:'))).toBe(true);
+  });
+
+  it('stderr contains [RIPPLE] progress message during web-search path', async () => {
+    setupAskWebPathMocks();
+
+    vi.doMock('../src/synthesis/ripple.js', () => ({
+      rippleUpdates: vi.fn().mockResolvedValue({ updatedSlugs: ['some-article'], skippedSlugs: [] }),
+    }));
+
+    vi.doMock('../src/synthesis/backlink-enforcer.js', () => ({
+      enforceBacklinks: vi.fn().mockResolvedValue([]),
+    }));
+
+    const { askCommand } = await import('../src/commands/ask.js');
+
+    const stderrMessages: string[] = [];
+    vi.spyOn(process.stderr, 'write').mockImplementation((msg: unknown) => {
+      stderrMessages.push(String(msg));
+      return true;
+    });
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    vi.spyOn(process, 'exit').mockImplementation((() => {}) as never);
+
+    await askCommand.parseAsync(['node', 'wiki', 'test question']);
+
+    expect(stderrMessages.some((m) => m.includes('[RIPPLE]'))).toBe(true);
+    expect(stderrMessages.some((m) => m.includes('Rippling cross-references'))).toBe(true);
+    expect(stderrMessages.some((m) => m.includes('Enforcing bidirectional backlinks'))).toBe(true);
+  });
+});
+
 // --- Unit tests for wired ingest command (using vi.mock) ---
 
 describe('ingest command — URL ingestion pipeline wiring', () => {
