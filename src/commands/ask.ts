@@ -15,6 +15,7 @@ import { fileAnswerAsArticle } from '../retrieval/article-filer.js';
 import { buildDefaultSchema } from '../schema/template.js';
 import { rippleUpdates } from '../synthesis/ripple.js';
 import { enforceBacklinks } from '../synthesis/backlink-enforcer.js';
+import { syncArticle, addUserMemory, ensureTenant } from '../hydra/client.js';
 import type { RawSourceEnvelope } from '../types/ingestion.js';
 import type { Article } from '../types/article.js';
 
@@ -52,6 +53,9 @@ export const askCommand = new Command('ask')
       // Load config
       const config = await loadConfig();
       const store = new WikiStore(config.vault_path);
+
+      // HydraDB: ensure tenant exists (no-op if no API key)
+      await ensureTenant();
 
       // Schema bootstrap: create schema.md on first run if missing (per D-08)
       let schema = await store.readSchema();
@@ -125,6 +129,9 @@ export const askCommand = new Command('ask')
               process.stderr.write(`[BACKLINK] Warning: backlink enforcement failed — ${msg}\n`);
             }
           }
+          // HydraDB: track user interaction
+          await addUserMemory(question, 'wiki', coverage.articles.map((a) => a.frontmatter.title));
+
           return; // Exit — do NOT fall through to web search
         }
 
@@ -286,6 +293,16 @@ export const askCommand = new Command('ask')
           // Do NOT throw — continue processing remaining articles
         }
       }
+
+      // HydraDB: sync newly created/updated articles + track user memory
+      for (const article of synthesisResult.articles) {
+        await syncArticle(article);
+      }
+      await addUserMemory(
+        question,
+        'web',
+        synthesisResult.articles.map((a) => a.frontmatter.title)
+      );
 
       // Summary to stderr (existing, now includes ripple info)
       const newCount = synthesisResult.articles.length - synthesisResult.updatedSlugs.length;

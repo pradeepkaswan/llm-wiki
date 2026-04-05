@@ -11,6 +11,11 @@ vi.mock('../src/search/search-index.js', () => ({
   search: vi.fn().mockReturnValue([]),
 }));
 
+// Mock HydraDB — no API calls in tests
+vi.mock('../src/hydra/client.js', () => ({
+  semanticRecall: vi.fn().mockResolvedValue([]),
+}));
+
 import { generateText } from '../src/llm/adapter.js';
 import { buildIndex, search } from '../src/search/search-index.js';
 import { assessCoverage } from '../src/retrieval/orchestrator.js';
@@ -114,7 +119,7 @@ describe('assessCoverage', () => {
 
   it('returns { covered: false, articles: [] } when store.listArticles() returns []', async () => {
     const result = await assessCoverage('What is flash attention?', store as never, 5.0);
-    expect(result).toEqual({ covered: false, articles: [] });
+    expect(result).toEqual({ covered: false, articles: [], source: 'bm25' });
     // buildIndex should not have been called since wiki is empty
     expect(buildIndex).not.toHaveBeenCalled();
   });
