@@ -59,6 +59,10 @@ export async function loadConfig(): Promise<Config> {
     const raw = await fs.readFile(CONFIG_PATH, 'utf8');
     const parsed = JSON.parse(raw) as Partial<Config>;
     const merged: Config = { ...DEFAULTS, ...parsed };
+    // Expand ~ to home directory in vault_path
+    if (merged.vault_path.startsWith('~')) {
+      merged.vault_path = merged.vault_path.replace('~', os.homedir());
+    }
     validateConfig(merged);
     return merged;
   } catch (err) {
