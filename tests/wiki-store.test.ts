@@ -194,4 +194,18 @@ describe('WikiStore', () => {
       expect(logContent).toMatch(/create \| /);
     });
   });
+
+  describe('validateFrontmatter — filed type', () => {
+    it('accepts type filed without throwing', async () => {
+      const article = makeArticle();
+      article.frontmatter.type = 'filed';
+      await expect(store.saveArticle(article)).resolves.toBeDefined();
+    });
+
+    it('throws on invalid type bogus', async () => {
+      const article = makeArticle();
+      (article.frontmatter as unknown as Record<string, string>).type = 'bogus';
+      await expect(store.saveArticle(article)).rejects.toThrow('Invalid frontmatter type');
+    });
+  });
 });
