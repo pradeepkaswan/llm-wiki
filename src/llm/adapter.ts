@@ -27,7 +27,7 @@ export function createProvider(config: Config): LanguageModel {
       const ollamaProvider = createOllama({
         baseURL: `${config.llm_base_url ?? 'http://localhost:11434'}/api`,
       });
-      return ollamaProvider(model ?? 'llama3.3');
+      return ollamaProvider(model ?? 'llama3.3') as unknown as LanguageModel;
     }
     default:
       throw new Error(

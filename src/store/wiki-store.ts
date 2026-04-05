@@ -49,7 +49,7 @@ export class WikiStore {
     this.validateFrontmatter(article.frontmatter);
 
     // 2. Stringify via gray-matter
-    const content = matter.stringify(article.body, article.frontmatter as Record<string, unknown>);
+    const content = matter.stringify(article.body, article.frontmatter as unknown as Record<string, unknown>);
 
     // 3. Round-trip YAML validation — yaml.load() throws YAMLException on invalid YAML
     //    This catches corruption gray-matter's stringify might introduce
