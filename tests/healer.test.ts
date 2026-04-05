@@ -117,9 +117,13 @@ describe('healFindings()', () => {
   beforeEach(() => {
     store = new MockWikiStore();
     mockGenerateText.mockReset();
+    mockBuildIndex.mockReset();
     mockBuildIndex.mockReturnValue({});
+    mockSearch.mockReset();
     mockSearch.mockReturnValue([]);
+    mockRippleUpdates.mockReset();
     mockRippleUpdates.mockResolvedValue({ updatedSlugs: [], skippedSlugs: [] });
+    mockEnforceBacklinks.mockReset();
     mockEnforceBacklinks.mockResolvedValue([]);
     vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
   });
@@ -314,10 +318,8 @@ describe('healFindings()', () => {
     // First finding failed, second succeeded
     expect(result.errors).toBe(1);
     expect(result.fixed).toBe(1);
-    // saveArticle called once for the successful finding
-    expect(saveArticleSpy).toHaveBeenCalledTimes(
-      expect.any(Number)  // at least once for the successful article
-    );
+    // saveArticle called at least once for the successful finding
+    expect(saveArticleSpy).toHaveBeenCalledTimes(1);
   });
 
   // Test 10: ripple + backlink called after non-dry-run heal
