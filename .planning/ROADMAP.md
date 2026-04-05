@@ -165,8 +165,12 @@ Plans:
   2. Each lint finding has a category, severity, affected articles, and a concrete suggested fix
   3. Running `wiki heal` auto-fixes findings: creates missing concept pages, adds missing cross-references, re-fetches stale articles via `--refresh`, flags contradictions for human review
   4. Lint + heal append to `log.md` like any other wiki operation
-**Plans**: TBD
+**Plans**: 2 plans
 **UI hint**: no
+
+Plans:
+- [ ] 09-01-PLAN.md — Lint engine (linter.ts) with 5 check types + wiki lint CLI command
+- [ ] 09-02-PLAN.md — Heal engine (healer.ts) with fix routing + wiki heal CLI command
 
 ## Progress
 
@@ -183,4 +187,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 6. OpenClaw Skill | 2/2 | Complete   | 2026-04-05 |
 | 7. Schema + Activity Log | 0/2 | Not started | - |
 | 8. Multi-Page Ingest + Broad Filing + Graph | 0/3 | Not started | - |
-| 9. Lint + Heal | 0/TBD | Not started | - |
+| 9. Lint + Heal | 0/2 | Not started | - |
