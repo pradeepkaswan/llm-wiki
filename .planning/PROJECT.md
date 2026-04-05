@@ -27,9 +27,10 @@ Every question you ask makes the wiki smarter — the knowledge compounds automa
 - [x] Broad filing (comparisons, analyses, connections → wiki) — Validated in Phase 8: Broad Filing
 - [x] Bidirectional backlinks for Obsidian graph view — Validated in Phase 8: Graph Integrity
 
+- [x] Lint + heal workflow (contradictions, orphans, stale claims) — Validated in Phase 9: Lint + Heal
+
 ### Active
 
-- [ ] Lint + heal workflow (contradictions, orphans, stale claims)
 - [ ] Wiki articles stored in existing Obsidian vault (Pradeep's Vault)
 - [ ] Auto-maintained index of all wiki articles
 
@@ -87,4 +88,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-05 after Phase 8 completion — Phase 9 (Lint + Heal) remaining*
+*Last updated: 2026-04-05 after Phase 9 completion — all 9 phases complete (v1.0 + Karpathy v1.1)*
