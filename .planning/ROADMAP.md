@@ -169,8 +169,8 @@ Plans:
 **UI hint**: no
 
 Plans:
-- [ ] 09-01-PLAN.md — Lint engine (linter.ts) with 5 check types + wiki lint CLI command
-- [ ] 09-02-PLAN.md — Heal engine (healer.ts) with fix routing + wiki heal CLI command
+- [x] 09-01-PLAN.md — Lint engine (linter.ts) with 5 check types + wiki lint CLI command
+- [x] 09-02-PLAN.md — Heal engine (healer.ts) with fix routing + wiki heal CLI command
 
 ## Progress
 
