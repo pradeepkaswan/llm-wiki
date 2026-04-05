@@ -23,11 +23,12 @@ Every question you ask makes the wiki smarter — the knowledge compounds automa
 - [x] Wiki schema file (Karpathy's third layer) teaching LLM wiki conventions — Validated in Phase 7: Schema + Activity Log
 - [x] Append-only activity log tracking all wiki operations — Validated in Phase 7: Schema + Activity Log
 
+- [x] Multi-page ingest (one source touches 10-15 pages) — Validated in Phase 8: Multi-Page Ingest
+- [x] Broad filing (comparisons, analyses, connections → wiki) — Validated in Phase 8: Broad Filing
+- [x] Bidirectional backlinks for Obsidian graph view — Validated in Phase 8: Graph Integrity
+
 ### Active
 
-- [ ] Multi-page ingest (one source touches 10-15 pages)
-- [ ] Broad filing (comparisons, analyses, connections → wiki)
-- [ ] Bidirectional backlinks for Obsidian graph view
 - [ ] Lint + heal workflow (contradictions, orphans, stale claims)
 - [ ] Wiki articles stored in existing Obsidian vault (Pradeep's Vault)
 - [ ] Auto-maintained index of all wiki articles
@@ -86,4 +87,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-05 after Phase 7 completion — Karpathy v1.1 phases in progress*
+*Last updated: 2026-04-05 after Phase 8 completion — Phase 9 (Lint + Heal) remaining*
