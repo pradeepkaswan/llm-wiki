@@ -152,9 +152,9 @@ Plans:
 **UI hint**: no
 
 Plans:
-- [ ] 08-01-PLAN.md — Ripple module, backlink enforcer, See Also utility, Frontmatter type extension
-- [ ] 08-02-PLAN.md — Ask command integration: wire ripple + backlink enforcement after synthesis
-- [ ] 08-03-PLAN.md — Wiki file command: broad filing with LLM placement, ripple, backlinks
+- [x] 08-01-PLAN.md — Ripple module, backlink enforcer, See Also utility, Frontmatter type extension
+- [x] 08-02-PLAN.md — Ask command integration: wire ripple + backlink enforcement after synthesis
+- [x] 08-03-PLAN.md — Wiki file command: broad filing with LLM placement, ripple, backlinks
 
 ### Phase 9: Lint + Heal
 **Goal**: The wiki maintains its own health — finding contradictions, orphan pages, stale claims, and missing concepts, then auto-fixing what it can
