@@ -1,7 +1,7 @@
 import { HydraDBClient } from '@hydra_db/node';
 import type { Article } from '../types/article.js';
 
-const TENANT_ID = 'llm-wiki';
+const TENANT_ID = process.env['HYDRADB_TENANT_ID'] ?? 'claude-code';
 const KNOWLEDGE_SUB_TENANT = 'articles';
 const MEMORY_SUB_TENANT = 'user';
 
@@ -25,14 +25,8 @@ export function getHydraClient(): HydraDBClient | null {
  * Ensure the llm-wiki tenant exists in HydraDB.
  */
 export async function ensureTenant(): Promise<void> {
-  const client = getHydraClient();
-  if (!client) return;
-
-  try {
-    await client.tenant.create({ tenant_id: TENANT_ID });
-  } catch {
-    // Tenant already exists — safe to ignore
-  }
+  // Tenant is pre-created (free tier allows 1).
+  // This is a no-op kept for API compatibility.
 }
 
 /**
